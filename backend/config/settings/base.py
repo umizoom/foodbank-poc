@@ -98,7 +98,7 @@ LOGGING = {
     },
     "formatters": {
         "json": {
-            "()": "pythonjsonlogger.json.JsonFormatter",
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
             "format": "%(timestamp)s %(level)s %(name)s %(message)s %(request_id)s",
         },
     },

@@ -4,7 +4,7 @@ import { api } from '@/shared/api/client';
 import { FormField } from '@/shared/components/FormField';
 import { Button } from '@/shared/components/Button';
 import { AlertBanner } from '@/shared/components/AlertBanner';
-import { ApiError } from '@/shared/api/errors';
+import { ApiError, UnauthorizedError } from '@/shared/api/errors';
 import type { Client, Cart } from '@/shared/api/types';
 
 interface CardSimulatorProps {
@@ -26,10 +26,14 @@ export function CardSimulator({ onClientIdentified }: CardSimulatorProps) {
     setError(null);
     try {
       const client = await api.get<Client>(`/api/clients/lookup/?card_id=${encodeURIComponent(data.card_id)}`);
-      const cart = await api.post<Cart>('/api/carts/', { client: client.id });
+      const cart = await api.post<Cart>('/api/carts/', { client_id: client.id });
       onClientIdentified(client, cart);
     } catch (e) {
-      if (e instanceof ApiError && e.status === 404) {
+      if (e instanceof UnauthorizedError) {
+        setError('Session expired. Please log in again.');
+      } else if (e instanceof ApiError && e.status === 403) {
+        setError('Session expired. Please log in again.');
+      } else if (e instanceof ApiError && e.status === 404) {
         setError('No client found with this card ID');
       } else {
         setError('Failed to identify client');

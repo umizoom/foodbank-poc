@@ -154,7 +154,7 @@ class TestCartViews:
 
         response = api_client.post(f"/api/carts/{cart.id}/checkout/")
         assert response.status_code == 200
-        assert response.data["total"] == "20.00"
+        assert response.data["total_amount"] == "20.00"
 
     def test_cancel_cart(self, api_client, admin_user):
         client = ClientFactory()

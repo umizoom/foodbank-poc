@@ -26,7 +26,8 @@ source venv/bin/activate   # Linux/Mac
 # Install dependencies
 pip install -r requirements/dev.txt
 
-# Run database migrations
+# Generate and run database migrations
+python manage.py makemigrations core
 python manage.py migrate
 
 # Seed initial data (creates admin user + default categories + sample items)

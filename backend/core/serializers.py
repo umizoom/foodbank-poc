@@ -15,10 +15,12 @@ from core.models import (
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    item_count = serializers.IntegerField(read_only=True, default=0)
+
     class Meta:
         model = Category
-        fields = ["id", "name", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        fields = ["id", "name", "item_count", "created_at"]
+        read_only_fields = ["id", "created_at", "item_count"]
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -170,6 +172,7 @@ class TransactionSerializer(serializers.ModelSerializer):
     items = TransactionItemSerializer(many=True, read_only=True)
     client_name = serializers.CharField(source="client.name", read_only=True)
     admin_username = serializers.CharField(source="admin.username", read_only=True)
+    total_amount = serializers.DecimalField(source="total", max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
         model = Transaction
@@ -178,7 +181,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             "client",
             "client_name",
             "admin_username",
-            "total",
+            "total_amount",
             "items",
             "created_at",
         ]
@@ -187,10 +190,12 @@ class TransactionSerializer(serializers.ModelSerializer):
 class TransactionListSerializer(serializers.ModelSerializer):
     client_name = serializers.CharField(source="client.name", read_only=True)
     admin_username = serializers.CharField(source="admin.username", read_only=True)
+    total_amount = serializers.DecimalField(source="total", max_digits=10, decimal_places=2, read_only=True)
+    item_count = serializers.IntegerField(source="items.count", read_only=True)
 
     class Meta:
         model = Transaction
-        fields = ["id", "client", "client_name", "admin_username", "total", "created_at"]
+        fields = ["id", "client", "client_name", "admin_username", "total_amount", "item_count", "created_at"]
 
 
 class LoginSerializer(serializers.Serializer):

@@ -17,7 +17,7 @@ export function ItemCard({ item, cartId, onAdded }: ItemCardProps) {
   const handleAdd = async () => {
     setLoading(true);
     try {
-      await api.post(`/api/carts/${cartId}/items/`, { item: item.id, quantity: 1 });
+      await api.post(`/api/carts/${cartId}/items/`, { item_id: item.id, quantity: 1 });
       onAdded();
     } catch {
       // Error handled silently — item may be out of stock

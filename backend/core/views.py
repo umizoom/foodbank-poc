@@ -1,4 +1,7 @@
-from django.db import connection
+from django.db import connection, models
+from django.db.models import F
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django_filters.rest_framework import DjangoFilterBackend
 from django_ratelimit.decorators import ratelimit
 from rest_framework import filters, status, viewsets
@@ -29,6 +32,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     search_fields = ["name"]
+    pagination_class = None
+
+    def get_queryset(self):
+        return Category.objects.annotate(
+            item_count=models.Count("items")
+        )
 
 
 class ItemViewSet(viewsets.ModelViewSet):
@@ -36,6 +45,13 @@ class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
     filterset_fields = ["category"]
     search_fields = ["name"]
+    pagination_class = None
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.query_params.get("low_stock") == "true":
+            qs = qs.filter(stock_count__lte=F("low_stock_threshold"))
+        return qs
 
     @action(detail=True, methods=["patch"], url_path="stock")
     def update_stock(self, request, pk=None):
@@ -55,6 +71,7 @@ class ClientViewSet(viewsets.ModelViewSet):
     serializer_class = ClientSerializer
     search_fields = ["name", "card_id"]
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
+    pagination_class = None
 
     @action(detail=False, methods=["get"], url_path="lookup")
     def lookup_by_card(self, request):
@@ -153,6 +170,7 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ["client"]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     ordering_fields = ["created_at", "total"]
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -160,10 +178,11 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
         return TransactionSerializer
 
 
+@method_decorator(ensure_csrf_cookie, name="dispatch")
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
-    @ratelimit(key="ip", rate="5/m", method="POST", block=True)
+    @method_decorator(ratelimit(key="ip", rate="5/m", method="POST", block=True))
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -188,6 +207,7 @@ class LogoutView(APIView):
         return Response({"detail": "Logged out"})
 
 
+@method_decorator(ensure_csrf_cookie, name="dispatch")
 class SessionView(APIView):
     def get(self, request):
         return Response({

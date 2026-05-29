@@ -1,7 +1,7 @@
 import logging
 from datetime import timedelta
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login as auth_login
 from django.utils import timezone
 
 from core.exceptions import AccountLockedError
@@ -71,7 +71,7 @@ def login(request, username, password):
 
     record_attempt(username, ip_address, successful=True)
     clear_failed_attempts(username)
-    request.session.create()
+    auth_login(request, user)
     logger.info(
         "Successful login",
         extra={"username": username, "ip": ip_address},

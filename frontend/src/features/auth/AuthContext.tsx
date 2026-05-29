@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api
       .get<SessionInfo>('/api/auth/session/')
       .then((data) => {
-        dispatch({ type: 'LOGIN_SUCCESS', payload: { username: data.username } });
+        dispatch({ type: 'LOGIN_SUCCESS', payload: { username: data.user.username } });
       })
       .catch(() => {
         dispatch({ type: 'SET_LOADING', payload: false });
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const data = await api.post<SessionInfo>('/api/auth/login/', credentials);
-    dispatch({ type: 'LOGIN_SUCCESS', payload: { username: data.username } });
+    dispatch({ type: 'LOGIN_SUCCESS', payload: { username: data.user.username } });
   }, []);
 
   const logout = useCallback(async () => {

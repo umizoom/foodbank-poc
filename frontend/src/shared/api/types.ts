@@ -82,7 +82,10 @@ export interface TransactionListItem {
 }
 
 export interface SessionInfo {
-  username: string;
+  user: {
+    id: number;
+    username: string;
+  };
 }
 
 export interface LoginCredentials {
@@ -100,11 +103,11 @@ export interface BalanceAddPayload {
 }
 
 export interface CartCreatePayload {
-  client: number;
+  client_id: number;
 }
 
 export interface CartItemAddPayload {
-  item: number;
+  item_id: number;
   quantity: number;
 }
 

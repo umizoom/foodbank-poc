@@ -4,15 +4,15 @@ import { mockCategories, mockItems, mockClients, mockCart, mockTransactionList, 
 export const handlers = [
   // Auth
   http.get('/api/auth/session/', () => {
-    return HttpResponse.json({ username: 'admin' });
+    return HttpResponse.json({ user: { id: 1, username: 'admin' } });
   }),
 
   http.post('/api/auth/login/', async ({ request }) => {
     const body = (await request.json()) as { username: string; password: string };
     if (body.username === 'admin' && body.password === 'password') {
-      return HttpResponse.json({ username: 'admin' });
+      return HttpResponse.json({ user: { id: 1, username: 'admin' } });
     }
-    return HttpResponse.json({ non_field_errors: ['Invalid credentials'] }, { status: 401 });
+    return HttpResponse.json({ error: 'Invalid credentials' }, { status: 401 });
   }),
 
   http.post('/api/auth/logout/', () => {
@@ -77,16 +77,16 @@ export const handlers = [
     return HttpResponse.json(mockClients);
   }),
 
-  http.get('/api/clients/:id/', ({ params }) => {
-    const client = mockClients.find((c) => c.id === Number(params.id));
-    if (!client) return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
-    return HttpResponse.json(client);
-  }),
-
   http.get('/api/clients/lookup/', ({ request }) => {
     const url = new URL(request.url);
     const cardId = url.searchParams.get('card_id');
     const client = mockClients.find((c) => c.card_id === cardId);
+    if (!client) return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
+    return HttpResponse.json(client);
+  }),
+
+  http.get('/api/clients/:id/', ({ params }) => {
+    const client = mockClients.find((c) => c.id === Number(params.id));
     if (!client) return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
     return HttpResponse.json(client);
   }),
