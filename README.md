@@ -30,7 +30,9 @@ pip install -r requirements/dev.txt
 python manage.py makemigrations core
 python manage.py migrate
 
-# Seed initial data (creates admin user + default categories + sample items)
+# Seed initial data
+# Creates: admin user, 8 product categories, 32 sample items (4 per category),
+#          and 5 sample clients with card balances
 python manage.py seed_data --admin-password changeme
 
 # Start the development server
