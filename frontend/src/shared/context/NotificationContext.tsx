@@ -32,7 +32,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [toasts, dispatch] = useReducer(notificationReducer, []);
 
   const addToast = useCallback((type: Toast['type'], message: string) => {
-    const id = crypto.randomUUID();
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
     dispatch({ type: 'ADD', payload: { id, type, message, createdAt: Date.now() } });
 
     const timeout = type === 'success' ? 5000 : 8000;
