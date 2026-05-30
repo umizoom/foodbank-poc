@@ -10,6 +10,7 @@ services:
       - SECRET_KEY=${SECRET_KEY:-changeme-in-production}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-http://localhost}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - sqlite-data:/app/data
