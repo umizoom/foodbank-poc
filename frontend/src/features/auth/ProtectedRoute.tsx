@@ -1,10 +1,18 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 
 export function ProtectedRoute() {
   const { state } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!state.loading && !state.isAuthenticated) {
+      navigate('/login', { state: { from: location }, replace: true });
+    }
+  }, [state.loading, state.isAuthenticated, navigate, location]);
 
   if (state.loading) {
     return (
@@ -15,7 +23,7 @@ export function ProtectedRoute() {
   }
 
   if (!state.isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return null;
   }
 
   return <Outlet />;
