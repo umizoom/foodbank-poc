@@ -1,8 +1,8 @@
 export class ApiError extends Error {
   status: number;
-  data: Record<string, string[]>;
+  data: Record<string, unknown>;
 
-  constructor(status: number, data: Record<string, string[]>) {
+  constructor(status: number, data: Record<string, unknown>) {
     super(`API Error: ${status}`);
     this.name = 'ApiError';
     this.status = status;

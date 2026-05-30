@@ -45,7 +45,7 @@ describe('API Client', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(ApiError);
       expect((e as ApiError).status).toBe(400);
-      expect((e as ApiError).data.name[0]).toBe('This field is required.');
+      expect((e as ApiError).data.name).toEqual(['This field is required.']);
     }
   });
 

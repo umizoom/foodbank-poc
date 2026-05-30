@@ -29,8 +29,9 @@ export function LoginForm() {
       await login(data);
     } catch (e) {
       if (e instanceof ApiError) {
-        const msg = e.data?.non_field_errors?.[0] || e.data?.detail?.[0] || 'Invalid credentials';
-        setError(msg);
+        const errors = e.data?.non_field_errors as string[] | undefined;
+        const detail = e.data?.detail as string[] | undefined;
+        setError(errors?.[0] || detail?.[0] || 'Invalid credentials');
       } else {
         setError('Unable to connect to server');
       }

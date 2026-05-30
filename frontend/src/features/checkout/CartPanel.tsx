@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '@/shared/api/client';
+import { ApiError, NetworkError } from '@/shared/api/errors';
 import { Button } from '@/shared/components/Button';
 import { ConfirmModal } from '@/shared/components/ConfirmModal';
 import { AlertBanner } from '@/shared/components/AlertBanner';
@@ -30,8 +31,14 @@ export function CartPanel({ cart, clientBalance, onCartUpdate, onCheckoutSuccess
       const tx = await api.post<Transaction>(`/api/carts/${cart.id}/checkout/`);
       addToast('success', 'Checkout completed successfully');
       onCheckoutSuccess(tx);
-    } catch {
-      setError('Insufficient balance. Remove items and try again.');
+    } catch (err) {
+      if (err instanceof ApiError && err.data?.error === 'Insufficient balance') {
+        setError('Insufficient balance. Remove items and try again.');
+      } else if (err instanceof NetworkError) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError('Checkout failed. Please try again.');
+      }
     } finally {
       setCheckoutLoading(false);
       setShowConfirm(false);

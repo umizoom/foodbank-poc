@@ -7,11 +7,12 @@ export function useFormApiError<T extends FieldValues>(setError: UseFormSetError
     (error: unknown): string | null => {
       if (error instanceof ApiError && error.status === 400) {
         let generalError: string | null = null;
-        Object.entries(error.data).forEach(([field, messages]) => {
+        Object.entries(error.data).forEach(([field, value]) => {
+          const message = Array.isArray(value) ? value[0] : value;
           if (field === 'non_field_errors' || field === 'detail') {
-            generalError = messages[0];
+            generalError = String(message);
           } else {
-            setError(field as Path<T>, { message: messages[0] });
+            setError(field as Path<T>, { message: String(message) });
           }
         });
         return generalError;
