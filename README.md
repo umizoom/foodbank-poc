@@ -27,8 +27,8 @@ source venv/bin/activate   # Linux/Mac
 pip install -r requirements/dev.txt
 
 # Generate and run database migrations
-python manage.py makemigrations core
-python manage.py migrate
+python3 manage.py makemigrations core
+python3 manage.py migrate
 
 # Seed initial data
 # Creates: admin user, 8 product categories, 32 sample items (4 per category),
