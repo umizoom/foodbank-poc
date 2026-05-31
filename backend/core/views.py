@@ -172,6 +172,13 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["created_at", "total"]
     pagination_class = None
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.query_params.get("today") == "true":
+            from django.utils import timezone
+            qs = qs.filter(created_at__date=timezone.localdate())
+        return qs
+
     def get_serializer_class(self):
         if self.action == "list":
             return TransactionListSerializer
