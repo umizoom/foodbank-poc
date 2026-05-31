@@ -11,8 +11,8 @@ export class ApiError extends Error {
 }
 
 export class UnauthorizedError extends ApiError {
-  constructor() {
-    super(401, { non_field_errors: ['Session expired'] });
+  constructor(data: Record<string, unknown> = { non_field_errors: ['Session expired'] }) {
+    super(401, data);
     this.name = 'UnauthorizedError';
   }
 }

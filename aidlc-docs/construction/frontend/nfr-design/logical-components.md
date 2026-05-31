@@ -290,7 +290,7 @@ export const handlers = [
   http.post('/api/auth/login/', async ({ request }) => {
     const body = await request.json();
     if (body.username === 'admin') return HttpResponse.json({ username: 'admin' });
-    return HttpResponse.json({ non_field_errors: ['Invalid credentials'] }, { status: 401 });
+    return HttpResponse.json({ non_field_errors: ['Invalid Credentials'] }, { status: 401 });
   }),
   // ... all endpoints
 ];

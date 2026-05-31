@@ -32,11 +32,11 @@ describe('LoginForm', () => {
     await user.click(screen.getByTestId('login-submit-button'));
 
     await waitFor(() => {
-      expect(screen.queryByText('Invalid credentials')).not.toBeInTheDocument();
+      expect(screen.queryByText('Invalid Credentials')).not.toBeInTheDocument();
     });
   });
 
-  it('shows error message on invalid credentials', async () => {
+  it('shows error message on Invalid Credentials', async () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginForm />);
 
@@ -45,7 +45,7 @@ describe('LoginForm', () => {
     await user.click(screen.getByTestId('login-submit-button'));
 
     await waitFor(() => {
-      expect(screen.getByText('Invalid credentials')).toBeInTheDocument();
+      expect(screen.getByText('Invalid Credentials')).toBeInTheDocument();
     });
   });
 });

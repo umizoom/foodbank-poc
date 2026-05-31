@@ -7,7 +7,7 @@
 
 **Acceptance Criteria:**
 - Given valid credentials, when I submit the login form, then I am redirected to the dashboard
-- Given invalid credentials, when I submit the login form, then I see an error message and remain on the login page
+- Given Invalid Credentials, when I submit the login form, then I see an error message and remain on the login page
 - Given I am not authenticated, when I try to access any protected page, then I am redirected to login
 - Brute-force protection: after 5 failed attempts, account is temporarily locked for 15 minutes
 

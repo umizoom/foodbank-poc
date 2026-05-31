@@ -11,7 +11,7 @@
 
 **Submit behavior:**
 - Disable button while loading
-- Display API error (invalid credentials / account locked) in AlertBanner
+- Display API error (Invalid Credentials / account locked) in AlertBanner
 - On success, redirect to `/` (or originally requested URL)
 
 ---

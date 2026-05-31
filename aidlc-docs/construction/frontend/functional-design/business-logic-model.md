@@ -11,7 +11,7 @@
    a. Dispatch LOGIN_SUCCESS { username }
    b. Navigate to "/" or originally requested URL
 5. IF 401/403:
-   a. Display error message from API (invalid credentials or account locked)
+   a. Display error message from API (Invalid Credentials or account locked)
    b. Clear password field, keep username
 6. IF network error:
    a. Display "Unable to connect to server"

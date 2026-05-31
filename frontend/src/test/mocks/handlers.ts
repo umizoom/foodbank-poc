@@ -12,7 +12,7 @@ export const handlers = [
     if (body.username === 'admin' && body.password === 'password') {
       return HttpResponse.json({ user: { id: 1, username: 'admin' } });
     }
-    return HttpResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    return HttpResponse.json({ error: 'Invalid Credentials' }, { status: 401 });
   }),
 
   http.post('/api/auth/logout/', () => {

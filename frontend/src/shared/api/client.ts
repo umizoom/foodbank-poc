@@ -79,15 +79,15 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
     headers,
   });
 
-  if (response.status === 401) {
-    throw new UnauthorizedError();
-  }
-
   if (response.status === 204) {
     return undefined as T;
   }
 
   const data = await response.json();
+
+  if (response.status === 401) {
+    throw new UnauthorizedError(data);
+  }
 
   if (!response.ok) {
     throw new ApiError(response.status, data);
