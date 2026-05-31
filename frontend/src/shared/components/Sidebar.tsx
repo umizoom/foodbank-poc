@@ -12,7 +12,12 @@ const navItems = [
   { to: '/transactions', label: 'Transactions' },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ open, onClose }: SidebarProps) {
   const [lowStockCount, setLowStockCount] = useState(0);
 
   useEffect(() => {
@@ -23,7 +28,11 @@ export function Sidebar() {
   }, []);
 
   return (
-    <aside className="w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col">
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col transform transition-transform duration-200 ease-in-out ${
+        open ? 'translate-x-0' : '-translate-x-full'
+      } md:relative md:translate-x-0 md:transform-none`}
+    >
       <div className="p-4 border-b border-gray-200">
         <h2 className="text-lg font-bold text-gray-900">Food Bank</h2>
         <p className="text-xs text-gray-500">Inventory System</p>
@@ -42,6 +51,7 @@ export function Sidebar() {
               }`
             }
             data-testid={`nav-${item.label.toLowerCase()}`}
+            onClick={onClose}
           >
             <span>{item.label}</span>
             {item.showBadge && lowStockCount > 0 && (
