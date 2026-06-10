@@ -9,7 +9,7 @@ describe('CheckoutPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Checkout')).toBeInTheDocument();
-      expect(screen.getByText('Simulate Card Tap')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Simulate Card Tap' })).toBeInTheDocument();
     });
   });
 
