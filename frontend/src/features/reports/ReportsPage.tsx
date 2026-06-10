@@ -4,6 +4,7 @@ import { PageHeader } from '@/shared/components/PageHeader';
 import { DataTable, type Column } from '@/shared/components/DataTable';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
 import { Button } from '@/shared/components/Button';
+import { downloadCsv } from '@/shared/utils/csv';
 import type { ReportItem } from '@/shared/api/types';
 
 const PRESETS: { label: string; value: Exclude<ReportPeriod, 'custom'> }[] = [
@@ -37,6 +38,19 @@ export function ReportsPage() {
   const handleRunReport = () => {
     runReport(startDate, endDate);
     setLastRanDates({ start: startDate, end: endDate });
+  };
+
+  const handleExportCsv = () => {
+    if (!report || !lastRanDates) return;
+    const headers = ['Item Name', 'Category', 'Qty Sold', 'Total Amount', 'Current Stock'];
+    const rows = report.items.map((item) => [
+      item.item_name,
+      item.category_name,
+      item.total_quantity_sold,
+      item.total_amount,
+      item.current_stock,
+    ]);
+    downloadCsv(`report_${lastRanDates.start}_${lastRanDates.end}.csv`, headers, rows);
   };
 
   const categoryTotals = useMemo(() => {
@@ -119,6 +133,15 @@ export function ReportsPage() {
             data-testid="run-report-btn"
           >
             {loading ? 'Running...' : 'Run Report'}
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={handleExportCsv}
+            disabled={!report}
+            data-testid="export-csv-btn"
+          >
+            Export CSV
           </Button>
         </div>
 
