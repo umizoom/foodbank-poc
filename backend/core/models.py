@@ -52,6 +52,10 @@ class Client(models.Model):
     name = models.CharField(max_length=200)
     card_id = models.CharField(max_length=100, unique=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    allergies = models.JSONField(default=list, blank=True)
+    diaper_size = models.CharField(max_length=50, blank=True, default="")
+    catchment_area = models.BooleanField(default=True)
+    notes = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

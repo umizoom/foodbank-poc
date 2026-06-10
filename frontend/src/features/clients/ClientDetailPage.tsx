@@ -75,6 +75,50 @@ export function ClientDetailPage() {
         </dl>
       </div>
 
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <h3 className="text-md font-semibold text-gray-900 mb-3">Client Information</h3>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <dt className="text-sm text-gray-500">Allergies / Dietary Restrictions</dt>
+            <dd className="text-sm text-gray-900 mt-1">
+              {client.allergies.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {client.allergies.map((a) => (
+                    <span key={a} className="inline-block px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-800">
+                      {a}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-gray-400">None</span>
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-sm text-gray-500">Diaper Size</dt>
+            <dd className="text-sm text-gray-900 mt-1">
+              {client.diaper_size || <span className="text-gray-400">N/A</span>}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-sm text-gray-500">Catchment Area</dt>
+            <dd className="text-sm text-gray-900 mt-1">
+              {client.catchment_area ? (
+                <span className="text-green-700">In area</span>
+              ) : (
+                <span className="text-red-600">Out of area</span>
+              )}
+            </dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-sm text-gray-500">Notes</dt>
+            <dd className="text-sm text-gray-900 mt-1 whitespace-pre-wrap">
+              {client.notes || <span className="text-gray-400">No notes</span>}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
       <h2 className="text-lg font-semibold text-gray-900 mb-3">Recent Transactions</h2>
       {transactions.length === 0 ? (
         <p className="text-gray-500 text-sm">No transactions for this client.</p>
