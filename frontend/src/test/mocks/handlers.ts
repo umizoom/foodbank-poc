@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { mockCategories, mockItems, mockClients, mockCart, mockTransactionList, mockTransaction } from './data';
+import { mockCategories, mockItems, mockClients, mockCart, mockTransactionList, mockTransaction, mockItemsSoldReport } from './data';
 
 export const handlers = [
   // Auth
@@ -142,5 +142,10 @@ export const handlers = [
   http.get('*/api/transactions/:id/', ({ params }) => {
     if (Number(params.id) === 1) return HttpResponse.json(mockTransaction);
     return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
+  }),
+
+  // Reports
+  http.get('*/api/reports/items-sold/', () => {
+    return HttpResponse.json(mockItemsSoldReport);
   }),
 ];

@@ -10,6 +10,7 @@ const navItems = [
   { to: '/clients', label: 'Clients' },
   { to: '/checkout', label: 'Checkout' },
   { to: '/transactions', label: 'Transactions' },
+  { to: '/reports', label: 'Reports' },
 ];
 
 interface SidebarProps {

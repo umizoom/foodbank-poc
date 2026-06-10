@@ -6,6 +6,7 @@ from core.views import (
     CategoryViewSet,
     ClientViewSet,
     ItemViewSet,
+    ItemsSoldReportView,
     LoginView,
     LogoutView,
     SessionView,
@@ -25,5 +26,6 @@ urlpatterns = [
     path("auth/login/", LoginView.as_view(), name="login"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("auth/session/", SessionView.as_view(), name="session"),
+    path("reports/items-sold/", ItemsSoldReportView.as_view(), name="report-items-sold"),
     path("health/", health_check, name="health-check"),
 ]

@@ -1,4 +1,4 @@
-import type { Category, Item, Client, Cart, TransactionListItem, Transaction } from '@/shared/api/types';
+import type { Category, Item, Client, Cart, TransactionListItem, Transaction, ItemsSoldReport } from '@/shared/api/types';
 
 export const mockCategories: Category[] = [
   { id: 1, name: 'Dairy', item_count: 3 },
@@ -47,4 +47,13 @@ export const mockTransaction: Transaction = {
     { id: 2, item_name: 'Bread', unit_cost: '3.25', quantity: 1, line_total: '3.25' },
   ],
   created_at: '2026-01-15T10:30:00Z',
+};
+
+export const mockItemsSoldReport: ItemsSoldReport = {
+  period: { start_date: '2026-06-10', end_date: '2026-06-10' },
+  items: [
+    { item_id: 1, item_name: 'Milk', category_name: 'Dairy', total_quantity_sold: 5, total_amount: '22.50', current_stock: 20 },
+    { item_id: 2, item_name: 'Bread', category_name: 'Bakery', total_quantity_sold: 3, total_amount: '9.75', current_stock: 5 },
+  ],
+  totals: { total_items_sold: 8, total_revenue: '32.25' },
 };

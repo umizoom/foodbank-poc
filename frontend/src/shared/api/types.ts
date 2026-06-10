@@ -120,3 +120,23 @@ export interface CartItemAddPayload {
 export interface CartItemUpdatePayload {
   quantity: number;
 }
+
+export interface ReportItem {
+  item_id: number | null;
+  item_name: string;
+  category_name: string;
+  total_quantity_sold: number;
+  total_amount: string;
+  current_stock: number | null;
+}
+
+export interface ReportTotals {
+  total_items_sold: number;
+  total_revenue: string;
+}
+
+export interface ItemsSoldReport {
+  period: { start_date: string; end_date: string };
+  items: ReportItem[];
+  totals: ReportTotals;
+}

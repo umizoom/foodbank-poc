@@ -1,9 +1,11 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
-from core.models import Category, Client, Item
+from core.models import Category, Client, Item, Transaction, TransactionItem
 
 User = get_user_model()
 
@@ -35,6 +37,7 @@ class Command(BaseCommand):
         self._create_items()
         self._create_admin(options["admin_password"])
         self._create_clients()
+        self._create_transactions()
         self.stdout.write(self.style.SUCCESS("Seed data created successfully"))
 
     def _create_categories(self):
@@ -128,18 +131,116 @@ class Command(BaseCommand):
 
     def _create_clients(self):
         default_clients = [
-            {"name": "Maria Garcia", "card_id": "CARD-001", "balance": Decimal("150.00")},
-            {"name": "James Wilson", "card_id": "CARD-002", "balance": Decimal("75.00")},
-            {"name": "Sarah Johnson", "card_id": "CARD-003", "balance": Decimal("200.00")},
-            {"name": "David Lee", "card_id": "CARD-004", "balance": Decimal("50.00")},
-            {"name": "Emma Brown", "card_id": "CARD-005", "balance": Decimal("120.00")},
+            {
+                "name": "Maria Garcia",
+                "card_id": "CARD-001",
+                "balance": Decimal("150.00"),
+                "allergies": ["Lactose free"],
+            },
+            {
+                "name": "James Wilson",
+                "card_id": "CARD-002",
+                "balance": Decimal("75.00"),
+                "diaper_size": "Size 3",
+            },
+            {
+                "name": "Sarah Johnson",
+                "card_id": "CARD-003",
+                "balance": Decimal("200.00"),
+                "allergies": ["Gluten free", "Lactose free"],
+            },
+            {
+                "name": "David Lee",
+                "card_id": "CARD-004",
+                "balance": Decimal("50.00"),
+            },
+            {
+                "name": "Emma Brown",
+                "card_id": "CARD-005",
+                "balance": Decimal("120.00"),
+                "diaper_size": "Size 5",
+            },
         ]
         created_count = 0
         for client_data in default_clients:
+            defaults = {"name": client_data["name"], "balance": client_data["balance"]}
+            if "allergies" in client_data:
+                defaults["allergies"] = client_data["allergies"]
+            if "diaper_size" in client_data:
+                defaults["diaper_size"] = client_data["diaper_size"]
             _, created = Client.objects.get_or_create(
                 card_id=client_data["card_id"],
-                defaults={"name": client_data["name"], "balance": client_data["balance"]},
+                defaults=defaults,
             )
             if created:
                 created_count += 1
         self.stdout.write(f"Clients: {created_count} created, {len(default_clients) - created_count} already existed")
+
+    def _create_transactions(self):
+        admin = User.objects.filter(username="admin").first()
+        if not admin:
+            self.stdout.write("Admin user not found, skipping transactions")
+            return
+
+        clients = list(Client.objects.all()[:5])
+        items = list(Item.objects.all())
+        if not clients or not items:
+            self.stdout.write("No clients or items found, skipping transactions")
+            return
+
+        now = timezone.now()
+        transaction_data = [
+            {"client_idx": 0, "days_ago": 0, "item_indices": [0, 1, 4], "quantities": [2, 1, 3]},
+            {"client_idx": 1, "days_ago": 0, "item_indices": [2, 5], "quantities": [1, 2]},
+            {"client_idx": 2, "days_ago": 1, "item_indices": [3, 7, 10], "quantities": [1, 2, 1]},
+            {"client_idx": 3, "days_ago": 2, "item_indices": [1, 8], "quantities": [3, 1]},
+            {"client_idx": 4, "days_ago": 3, "item_indices": [0, 6, 11], "quantities": [1, 1, 2]},
+            {"client_idx": 0, "days_ago": 5, "item_indices": [9, 12], "quantities": [2, 1]},
+            {"client_idx": 1, "days_ago": 7, "item_indices": [4, 5, 13], "quantities": [1, 3, 2]},
+            {"client_idx": 2, "days_ago": 10, "item_indices": [0, 2, 8], "quantities": [2, 1, 1]},
+            {"client_idx": 3, "days_ago": 14, "item_indices": [6, 15], "quantities": [1, 2]},
+            {"client_idx": 4, "days_ago": 18, "item_indices": [3, 7, 14], "quantities": [2, 1, 3]},
+            {"client_idx": 0, "days_ago": 22, "item_indices": [10, 11, 1], "quantities": [1, 2, 1]},
+            {"client_idx": 1, "days_ago": 25, "item_indices": [9, 12, 16], "quantities": [3, 1, 2]},
+            {"client_idx": 2, "days_ago": 28, "item_indices": [5, 13], "quantities": [2, 1]},
+        ]
+
+        created_count = 0
+        for td in transaction_data:
+            client = clients[td["client_idx"]]
+            txn_items = []
+            total = Decimal("0.00")
+
+            for i, item_idx in enumerate(td["item_indices"]):
+                if item_idx >= len(items):
+                    continue
+                item = items[item_idx]
+                qty = td["quantities"][i]
+                line_total = item.cost * qty
+                total += line_total
+                txn_items.append((item, qty, line_total))
+
+            if not txn_items:
+                continue
+
+            txn = Transaction.objects.create(
+                client=client,
+                admin=admin,
+                total=total,
+            )
+            Transaction.objects.filter(id=txn.id).update(
+                created_at=now - timedelta(days=td["days_ago"])
+            )
+
+            for item, qty, line_total in txn_items:
+                TransactionItem.objects.create(
+                    transaction=txn,
+                    item=item,
+                    item_name=item.name,
+                    unit_cost=item.cost,
+                    quantity=qty,
+                    line_total=line_total,
+                )
+            created_count += 1
+
+        self.stdout.write(f"Transactions: {created_count} created")
