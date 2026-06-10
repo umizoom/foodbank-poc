@@ -1,9 +1,21 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useReport } from '../useReport';
 
 describe('useReport', () => {
-  it('fetches report on mount with default period', async () => {
-    const { result } = renderHook(() => useReport('daily'));
+  it('does not fetch on mount', () => {
+    const { result } = renderHook(() => useReport());
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.report).toBeNull();
+    expect(result.current.error).toBeNull();
+  });
+
+  it('fetches report when runReport is called', async () => {
+    const { result } = renderHook(() => useReport());
+
+    act(() => {
+      result.current.runReport('2026-06-01', '2026-06-10');
+    });
 
     expect(result.current.loading).toBe(true);
 
@@ -14,11 +26,14 @@ describe('useReport', () => {
     expect(result.current.report).not.toBeNull();
     expect(result.current.report!.items).toHaveLength(2);
     expect(result.current.report!.items[0].item_name).toBe('Milk');
-    expect(result.current.error).toBeNull();
   });
 
   it('returns totals in report', async () => {
-    const { result } = renderHook(() => useReport('daily'));
+    const { result } = renderHook(() => useReport());
+
+    act(() => {
+      result.current.runReport('2026-06-01', '2026-06-10');
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -28,13 +43,14 @@ describe('useReport', () => {
     expect(result.current.report!.totals.total_revenue).toBe('32.25');
   });
 
-  it('exposes refetch function', async () => {
-    const { result } = renderHook(() => useReport('weekly'));
+  it('does not fetch when dates are empty', () => {
+    const { result } = renderHook(() => useReport());
 
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
+    act(() => {
+      result.current.runReport('', '');
     });
 
-    expect(typeof result.current.refetch).toBe('function');
+    expect(result.current.loading).toBe(false);
+    expect(result.current.report).toBeNull();
   });
 });

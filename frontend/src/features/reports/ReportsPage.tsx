@@ -1,19 +1,53 @@
-import { useState } from 'react';
-import { useReport, type ReportPeriod } from '@/shared/hooks/useReport';
+import { useState, useMemo } from 'react';
+import { useReport, getPresetDates, type ReportPeriod } from '@/shared/hooks/useReport';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { DataTable, type Column } from '@/shared/components/DataTable';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
+import { Button } from '@/shared/components/Button';
 import type { ReportItem } from '@/shared/api/types';
 
-const PERIODS: { label: string; value: ReportPeriod }[] = [
+const PRESETS: { label: string; value: Exclude<ReportPeriod, 'custom'> }[] = [
   { label: 'Daily', value: 'daily' },
   { label: 'Weekly', value: 'weekly' },
   { label: 'Monthly', value: 'monthly' },
 ];
 
 export function ReportsPage() {
-  const [period, setPeriod] = useState<ReportPeriod>('daily');
-  const { report, loading } = useReport(period);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [activePreset, setActivePreset] = useState<ReportPeriod | null>(null);
+  const { report, loading, runReport } = useReport();
+
+  const handlePreset = (preset: Exclude<ReportPeriod, 'custom'>) => {
+    const { startDate: s, endDate: e } = getPresetDates(preset);
+    setStartDate(s);
+    setEndDate(e);
+    setActivePreset(preset);
+  };
+
+  const handleDateChange = (field: 'start' | 'end', value: string) => {
+    if (field === 'start') setStartDate(value);
+    else setEndDate(value);
+    setActivePreset(null);
+  };
+
+  const handleRunReport = () => {
+    runReport(startDate, endDate);
+  };
+
+  const categoryTotals = useMemo(() => {
+    if (!report) return [];
+    const map: Record<string, { quantity: number; amount: number }> = {};
+    for (const item of report.items) {
+      const cat = item.category_name;
+      if (!map[cat]) map[cat] = { quantity: 0, amount: 0 };
+      map[cat].quantity += item.total_quantity_sold;
+      map[cat].amount += parseFloat(item.total_amount);
+    }
+    return Object.entries(map)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [report]);
 
   const columns: Column<ReportItem>[] = [
     { key: 'item_name', header: 'Item', render: (row) => row.item_name },
@@ -32,56 +66,114 @@ export function ReportsPage() {
   ];
 
   return (
-    <div>
-      <PageHeader title="Reports" />
+    <div className="flex flex-col h-full">
+      <div className="flex-shrink-0">
+        <PageHeader title="Reports" />
 
-      <div className="flex gap-2 mb-4">
-        {PERIODS.map((p) => (
-          <button
-            key={p.value}
-            onClick={() => setPeriod(p.value)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              period === p.value
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-            data-testid={`period-${p.value}`}
+        <div className="flex items-end gap-4 mb-4 flex-wrap">
+          <div className="flex gap-2">
+            {PRESETS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => handlePreset(p.value)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activePreset === p.value
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                data-testid={`period-${p.value}`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">From</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => handleDateChange('start', e.target.value)}
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              data-testid="filter-date-from"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">To</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => handleDateChange('end', e.target.value)}
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              data-testid="filter-date-to"
+            />
+          </div>
+
+          <Button
+            onClick={handleRunReport}
+            disabled={!startDate || !endDate || loading}
+            data-testid="run-report-btn"
           >
-            {p.label}
-          </button>
-        ))}
+            {loading ? 'Running...' : 'Run Report'}
+          </Button>
+        </div>
+
+        {report && (
+          <>
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <p className="text-xs font-medium text-gray-500 uppercase">Period</p>
+                <p className="mt-1 text-lg font-semibold text-gray-900">
+                  {report.period.start_date} to {report.period.end_date}
+                </p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <p className="text-xs font-medium text-gray-500 uppercase">Total Items Sold</p>
+                <p className="mt-1 text-2xl font-bold text-gray-900">
+                  {report.totals.total_items_sold}
+                </p>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                <p className="text-xs font-medium text-gray-500 uppercase">Total Revenue</p>
+                <p className="mt-1 text-2xl font-bold text-gray-900">
+                  <CurrencyDisplay amount={String(report.totals.total_revenue)} />
+                </p>
+              </div>
+            </div>
+
+            {categoryTotals.length > 0 && (
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">By Category</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {categoryTotals.map((cat) => (
+                    <div
+                      key={cat.name}
+                      className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2"
+                      data-testid={`category-${cat.name}`}
+                    >
+                      <p className="text-xs font-medium text-gray-500">{cat.name}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {cat.quantity} items &mdash;{' '}
+                        <CurrencyDisplay amount={cat.amount.toFixed(2)} />
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
-      {report && (
-        <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <p className="text-xs font-medium text-gray-500 uppercase">Period</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">
-              {report.period.start_date} to {report.period.end_date}
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <p className="text-xs font-medium text-gray-500 uppercase">Total Items Sold</p>
-            <p className="mt-1 text-2xl font-bold text-gray-900">
-              {report.totals.total_items_sold}
-            </p>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <p className="text-xs font-medium text-gray-500 uppercase">Total Revenue</p>
-            <p className="mt-1 text-2xl font-bold text-gray-900">
-              <CurrencyDisplay amount={String(report.totals.total_revenue)} />
-            </p>
-          </div>
-        </div>
-      )}
-
-      <DataTable
-        columns={columns}
-        data={report?.items ?? []}
-        loading={loading}
-        emptyMessage="No items sold in this period."
-        keyExtractor={(row) => row.item_id ?? row.item_name}
-      />
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <DataTable
+          columns={columns}
+          data={report?.items ?? []}
+          loading={loading}
+          emptyMessage={report ? 'No items sold in this period.' : 'Select a period and click "Run Report" to generate.'}
+          keyExtractor={(row) => row.item_id ?? row.item_name}
+        />
+      </div>
     </div>
   );
 }

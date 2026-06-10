@@ -4,15 +4,12 @@ import { renderWithProviders } from '@/test/utils/render';
 import { ReportsPage } from '../ReportsPage';
 
 describe('ReportsPage', () => {
-  it('renders page title', async () => {
+  it('renders page title', () => {
     renderWithProviders(<ReportsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Reports')).toBeInTheDocument();
-    });
+    expect(screen.getByText('Reports')).toBeInTheDocument();
   });
 
-  it('renders period toggle buttons', () => {
+  it('renders preset period buttons', () => {
     renderWithProviders(<ReportsPage />);
 
     expect(screen.getByTestId('period-daily')).toBeInTheDocument();
@@ -20,49 +17,76 @@ describe('ReportsPage', () => {
     expect(screen.getByTestId('period-monthly')).toBeInTheDocument();
   });
 
-  it('displays report data in table', async () => {
+  it('renders date inputs and Run Report button', () => {
     renderWithProviders(<ReportsPage />);
+
+    expect(screen.getByTestId('filter-date-from')).toBeInTheDocument();
+    expect(screen.getByTestId('filter-date-to')).toBeInTheDocument();
+    expect(screen.getByTestId('run-report-btn')).toBeInTheDocument();
+  });
+
+  it('does not fetch report on page load', () => {
+    renderWithProviders(<ReportsPage />);
+
+    expect(screen.getByText('Select a period and click "Run Report" to generate.')).toBeInTheDocument();
+  });
+
+  it('pre-fills dates when preset button is clicked', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ReportsPage />);
+
+    await user.click(screen.getByTestId('period-daily'));
+
+    const fromInput = screen.getByTestId('filter-date-from') as HTMLInputElement;
+    const toInput = screen.getByTestId('filter-date-to') as HTMLInputElement;
+    expect(fromInput.value).not.toBe('');
+    expect(toInput.value).not.toBe('');
+  });
+
+  it('fetches report on Run Report click', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ReportsPage />);
+
+    await user.click(screen.getByTestId('period-daily'));
+    await user.click(screen.getByTestId('run-report-btn'));
 
     await waitFor(() => {
       expect(screen.getByText('Milk')).toBeInTheDocument();
       expect(screen.getByText('Bread')).toBeInTheDocument();
     });
-    expect(screen.getByText('Dairy')).toBeInTheDocument();
-    expect(screen.getByText('Bakery')).toBeInTheDocument();
   });
 
-  it('shows current stock per item', async () => {
-    renderWithProviders(<ReportsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText('20')).toBeInTheDocument();
-    });
-  });
-
-  it('daily button is active by default', () => {
-    renderWithProviders(<ReportsPage />);
-
-    const dailyBtn = screen.getByTestId('period-daily');
-    expect(dailyBtn.className).toContain('bg-blue-600');
-  });
-
-  it('switches active period on click', async () => {
+  it('shows summary cards after report runs', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ReportsPage />);
 
-    const weeklyBtn = screen.getByTestId('period-weekly');
-    await user.click(weeklyBtn);
-
-    expect(weeklyBtn.className).toContain('bg-blue-600');
-    expect(screen.getByTestId('period-daily').className).not.toContain('bg-blue-600');
-  });
-
-  it('displays summary totals', async () => {
-    renderWithProviders(<ReportsPage />);
+    await user.click(screen.getByTestId('period-daily'));
+    await user.click(screen.getByTestId('run-report-btn'));
 
     await waitFor(() => {
       expect(screen.getByText('Total Items Sold')).toBeInTheDocument();
       expect(screen.getByText('Total Revenue')).toBeInTheDocument();
     });
+  });
+
+  it('shows category breakdown after report runs', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ReportsPage />);
+
+    await user.click(screen.getByTestId('period-daily'));
+    await user.click(screen.getByTestId('run-report-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByText('By Category')).toBeInTheDocument();
+      expect(screen.getByTestId('category-Dairy')).toBeInTheDocument();
+      expect(screen.getByTestId('category-Bakery')).toBeInTheDocument();
+    });
+  });
+
+  it('Run Report button is disabled without dates', () => {
+    renderWithProviders(<ReportsPage />);
+
+    const btn = screen.getByTestId('run-report-btn');
+    expect(btn).toBeDisabled();
   });
 });

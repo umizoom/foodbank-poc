@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { api } from '@/shared/api/client';
 import type { ItemsSoldReport } from '@/shared/api/types';
 
-export type ReportPeriod = 'daily' | 'weekly' | 'monthly';
+export type ReportPeriod = 'daily' | 'weekly' | 'monthly' | 'custom';
 
-function getDateRange(period: ReportPeriod): { startDate: string; endDate: string } {
+function getDateRange(period: Exclude<ReportPeriod, 'custom'>): { startDate: string; endDate: string } {
   const today = new Date();
   const endDate = today.toISOString().split('T')[0];
   const start = new Date(today);
@@ -19,13 +19,25 @@ function getDateRange(period: ReportPeriod): { startDate: string; endDate: strin
   return { startDate, endDate };
 }
 
-export function useReport(period: ReportPeriod) {
+export function getPresetDates(period: Exclude<ReportPeriod, 'custom'>) {
+  return getDateRange(period);
+}
+
+interface UseReportReturn {
+  report: ItemsSoldReport | null;
+  loading: boolean;
+  error: string | null;
+  runReport: (startDate: string, endDate: string) => void;
+}
+
+export function useReport(): UseReportReturn {
   const [report, setReport] = useState<ItemsSoldReport | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReport = useCallback(() => {
-    const { startDate, endDate } = getDateRange(period);
+  const runReport = useCallback((startDate: string, endDate: string) => {
+    if (!startDate || !endDate) return;
+
     const url = `/api/reports/items-sold/?start_date=${startDate}&end_date=${endDate}`;
 
     setLoading(true);
@@ -35,11 +47,7 @@ export function useReport(period: ReportPeriod) {
       .then(setReport)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [period]);
+  }, []);
 
-  useEffect(() => {
-    fetchReport();
-  }, [fetchReport]);
-
-  return { report, loading, error, refetch: fetchReport };
+  return { report, loading, error, runReport };
 }
