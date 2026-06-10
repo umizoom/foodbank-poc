@@ -89,4 +89,22 @@ describe('ReportsPage', () => {
     const btn = screen.getByTestId('run-report-btn');
     expect(btn).toBeDisabled();
   });
+
+  it('shows stale data banner when dates change after running report', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ReportsPage />);
+
+    await user.click(screen.getByTestId('period-daily'));
+    await user.click(screen.getByTestId('run-report-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Milk')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId('stale-banner')).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId('period-weekly'));
+
+    expect(screen.getByTestId('stale-banner')).toBeInTheDocument();
+  });
 });

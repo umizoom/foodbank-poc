@@ -16,7 +16,10 @@ export function ReportsPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [activePreset, setActivePreset] = useState<ReportPeriod | null>(null);
+  const [lastRanDates, setLastRanDates] = useState<{ start: string; end: string } | null>(null);
   const { report, loading, runReport } = useReport();
+
+  const isStale = report && lastRanDates && (startDate !== lastRanDates.start || endDate !== lastRanDates.end);
 
   const handlePreset = (preset: Exclude<ReportPeriod, 'custom'>) => {
     const { startDate: s, endDate: e } = getPresetDates(preset);
@@ -33,6 +36,7 @@ export function ReportsPage() {
 
   const handleRunReport = () => {
     runReport(startDate, endDate);
+    setLastRanDates({ start: startDate, end: endDate });
   };
 
   const categoryTotals = useMemo(() => {
@@ -120,13 +124,16 @@ export function ReportsPage() {
 
         {report && (
           <>
-            <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                <p className="text-xs font-medium text-gray-500 uppercase">Period</p>
-                <p className="mt-1 text-lg font-semibold text-gray-900">
-                  {report.period.start_date} to {report.period.end_date}
-                </p>
+            {isStale && (
+              <div
+                className="mb-4 rounded-md border border-yellow-300 bg-yellow-50 px-4 py-2 text-sm text-yellow-800"
+                data-testid="stale-banner"
+              >
+                Dates have changed — click <strong>Run Report</strong> to update results.
               </div>
+            )}
+
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                 <p className="text-xs font-medium text-gray-500 uppercase">Total Items Sold</p>
                 <p className="mt-1 text-2xl font-bold text-gray-900">
