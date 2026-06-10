@@ -25,7 +25,7 @@ from core.serializers import (
     TransactionListSerializer,
     TransactionSerializer,
 )
-from core.services import auth_service, checkout_service, client_service, inventory_service
+from core.services import auth_service, checkout_service, client_service, inventory_service, report_service
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -220,6 +220,32 @@ class SessionView(APIView):
         return Response({
             "user": {"id": request.user.id, "username": request.user.username},
         })
+
+
+class ItemsSoldReportView(APIView):
+    def get(self, request):
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+
+        if not start_date or not end_date:
+            return Response(
+                {"error": "start_date and end_date query parameters are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from datetime import date as date_type
+
+        try:
+            parsed_start = date_type.fromisoformat(start_date)
+            parsed_end = date_type.fromisoformat(end_date)
+        except ValueError:
+            return Response(
+                {"error": "Invalid date format. Use YYYY-MM-DD."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        report = report_service.get_items_sold_report(parsed_start, parsed_end)
+        return Response(report)
 
 
 @api_view(["GET"])

@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 import pytest
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from core.models import Cart, CartItem, Client, Transaction
 from core.tests.factories import (
@@ -8,6 +11,8 @@ from core.tests.factories import (
     CategoryFactory,
     ClientFactory,
     ItemFactory,
+    TransactionFactory,
+    TransactionItemFactory,
     UserFactory,
 )
 
@@ -176,6 +181,64 @@ class TestTransactionViews:
         response = api_client.get("/api/transactions/")
         assert response.status_code == 200
         assert len(response.data) == 1
+
+
+@pytest.mark.django_db
+class TestReportViews:
+    def test_items_sold_report_requires_auth(self, unauthenticated_client):
+        response = unauthenticated_client.get(
+            "/api/reports/items-sold/?start_date=2026-06-01&end_date=2026-06-10"
+        )
+        assert response.status_code == 403
+
+    def test_items_sold_report_missing_dates(self, api_client):
+        response = api_client.get("/api/reports/items-sold/")
+        assert response.status_code == 400
+
+    def test_items_sold_report_invalid_date_format(self, api_client):
+        response = api_client.get(
+            "/api/reports/items-sold/?start_date=invalid&end_date=2026-06-10"
+        )
+        assert response.status_code == 400
+
+    def test_items_sold_report_returns_data(self, api_client, admin_user):
+        item = ItemFactory(cost="5.00", stock_count=20)
+        txn = TransactionFactory(admin=admin_user, total="10.00")
+        TransactionItemFactory(
+            transaction=txn, item=item, item_name=item.name,
+            unit_cost=item.cost, quantity=2, line_total="10.00",
+        )
+
+        today = timezone.localdate().isoformat()
+        response = api_client.get(
+            f"/api/reports/items-sold/?start_date={today}&end_date={today}"
+        )
+        assert response.status_code == 200
+        assert "items" in response.data
+        assert "totals" in response.data
+        assert len(response.data["items"]) == 1
+        assert response.data["items"][0]["item_name"] == item.name
+        assert response.data["items"][0]["total_quantity_sold"] == 2
+        assert response.data["items"][0]["current_stock"] == 20
+
+    def test_items_sold_report_filters_by_date(self, api_client, admin_user):
+        item = ItemFactory(cost="5.00", stock_count=20)
+        txn = TransactionFactory(admin=admin_user, total="5.00")
+        TransactionItemFactory(
+            transaction=txn, item=item, item_name=item.name,
+            unit_cost=item.cost, quantity=1, line_total="5.00",
+        )
+        from core.models import Transaction as TxnModel
+        TxnModel.objects.filter(id=txn.id).update(
+            created_at=timezone.now() - timedelta(days=10)
+        )
+
+        today = timezone.localdate().isoformat()
+        response = api_client.get(
+            f"/api/reports/items-sold/?start_date={today}&end_date={today}"
+        )
+        assert response.status_code == 200
+        assert len(response.data["items"]) == 0
 
 
 @pytest.mark.django_db

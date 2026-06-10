@@ -14,6 +14,7 @@ import { ClientDetailPage } from '@/features/clients/ClientDetailPage';
 import { CheckoutPage } from '@/features/checkout/CheckoutPage';
 import { TransactionListPage } from '@/features/transactions/TransactionListPage';
 import { TransactionDetailPage } from '@/features/transactions/TransactionDetailPage';
+import { ReportsPage } from '@/features/reports/ReportsPage';
 
 export function App() {
   return (
@@ -36,6 +37,7 @@ export function App() {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/transactions" element={<TransactionListPage />} />
                 <Route path="/transactions/:id" element={<TransactionDetailPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
               </Route>
             </Route>
           </Routes>

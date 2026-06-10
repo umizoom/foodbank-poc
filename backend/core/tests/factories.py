@@ -1,7 +1,7 @@
 import factory
 from django.contrib.auth import get_user_model
 
-from core.models import Cart, CartItem, Category, Client, Item
+from core.models import Cart, CartItem, Category, Client, Item, Transaction, TransactionItem
 
 User = get_user_model()
 
@@ -57,3 +57,24 @@ class CartItemFactory(factory.django.DjangoModelFactory):
     cart = factory.SubFactory(CartFactory)
     item = factory.SubFactory(ItemFactory)
     quantity = 1
+
+
+class TransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Transaction
+
+    client = factory.SubFactory(ClientFactory)
+    admin = factory.SubFactory(UserFactory)
+    total = "10.00"
+
+
+class TransactionItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TransactionItem
+
+    transaction = factory.SubFactory(TransactionFactory)
+    item = factory.SubFactory(ItemFactory)
+    item_name = factory.LazyAttribute(lambda obj: obj.item.name)
+    unit_cost = factory.LazyAttribute(lambda obj: obj.item.cost)
+    quantity = 1
+    line_total = factory.LazyAttribute(lambda obj: obj.unit_cost * obj.quantity)

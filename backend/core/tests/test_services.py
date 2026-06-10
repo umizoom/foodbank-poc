@@ -1,6 +1,8 @@
+from datetime import timedelta
 from decimal import Decimal
 
 import pytest
+from django.utils import timezone
 
 from core.exceptions import (
     AccountLockedError,
@@ -8,13 +10,16 @@ from core.exceptions import (
     InsufficientBalanceError,
     InsufficientStockError,
 )
-from core.services import checkout_service, client_service, inventory_service
+from core.models import Transaction
+from core.services import checkout_service, client_service, inventory_service, report_service
 from core.tests.factories import (
     CartFactory,
     CartItemFactory,
     CategoryFactory,
     ClientFactory,
     ItemFactory,
+    TransactionFactory,
+    TransactionItemFactory,
     UserFactory,
 )
 
@@ -177,3 +182,74 @@ class TestCheckoutService:
         checkout_service.cancel_cart(cart.id)
         with pytest.raises(CartNotFoundError):
             checkout_service.get_cart(cart.id)
+
+
+@pytest.mark.django_db
+class TestReportService:
+    def test_empty_report(self):
+        today = timezone.localdate()
+        result = report_service.get_items_sold_report(today, today)
+        assert result["items"] == []
+        assert result["totals"]["total_items_sold"] == 0
+
+    def test_aggregates_correctly(self):
+        item = ItemFactory(cost="5.00", stock_count=30)
+        txn1 = TransactionFactory(total="10.00")
+        TransactionItemFactory(
+            transaction=txn1, item=item, item_name=item.name,
+            unit_cost=Decimal("5.00"), quantity=2, line_total=Decimal("10.00"),
+        )
+        txn2 = TransactionFactory(total="15.00")
+        TransactionItemFactory(
+            transaction=txn2, item=item, item_name=item.name,
+            unit_cost=Decimal("5.00"), quantity=3, line_total=Decimal("15.00"),
+        )
+
+        today = timezone.localdate()
+        result = report_service.get_items_sold_report(today, today)
+        assert len(result["items"]) == 1
+        assert result["items"][0]["total_quantity_sold"] == 5
+        assert result["items"][0]["total_amount"] == Decimal("25.00")
+        assert result["totals"]["total_items_sold"] == 5
+
+    def test_includes_current_stock(self):
+        item = ItemFactory(cost="3.00", stock_count=42)
+        txn = TransactionFactory(total="3.00")
+        TransactionItemFactory(
+            transaction=txn, item=item, item_name=item.name,
+            unit_cost=Decimal("3.00"), quantity=1, line_total=Decimal("3.00"),
+        )
+
+        today = timezone.localdate()
+        result = report_service.get_items_sold_report(today, today)
+        assert result["items"][0]["current_stock"] == 42
+
+    def test_handles_deleted_items(self):
+        item = ItemFactory(cost="4.00", stock_count=10)
+        txn = TransactionFactory(total="8.00")
+        TransactionItemFactory(
+            transaction=txn, item=item, item_name=item.name,
+            unit_cost=Decimal("4.00"), quantity=2, line_total=Decimal("8.00"),
+        )
+        item.delete()
+
+        today = timezone.localdate()
+        result = report_service.get_items_sold_report(today, today)
+        assert len(result["items"]) == 1
+        assert result["items"][0]["current_stock"] is None
+        assert result["items"][0]["category_name"] == "Unknown"
+
+    def test_filters_by_date_range(self):
+        item = ItemFactory(cost="5.00", stock_count=20)
+        txn = TransactionFactory(total="5.00")
+        TransactionItemFactory(
+            transaction=txn, item=item, item_name=item.name,
+            unit_cost=Decimal("5.00"), quantity=1, line_total=Decimal("5.00"),
+        )
+        Transaction.objects.filter(id=txn.id).update(
+            created_at=timezone.now() - timedelta(days=15)
+        )
+
+        today = timezone.localdate()
+        result = report_service.get_items_sold_report(today, today)
+        assert len(result["items"]) == 0
