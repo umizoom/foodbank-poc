@@ -21,7 +21,7 @@ function renderModal(props = {}) {
 describe('AddBalanceModal', () => {
   it('renders modal with client name', () => {
     renderModal();
-    expect(screen.getByText('Add Balance')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Add Balance' })).toBeInTheDocument();
     expect(screen.getByText('Adding to: Maria Garcia')).toBeInTheDocument();
   });
 

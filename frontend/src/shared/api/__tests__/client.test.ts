@@ -12,7 +12,7 @@ describe('API Client', () => {
   it('includes credentials in requests', async () => {
     let capturedCredentials: RequestCredentials | undefined;
     server.use(
-      http.get('/api/test/', ({ request }) => {
+      http.get('*/api/test/', ({ request }) => {
         capturedCredentials = (request as unknown as { credentials?: RequestCredentials }).credentials;
         return HttpResponse.json({ ok: true });
       }),
@@ -25,7 +25,7 @@ describe('API Client', () => {
 
   it('throws UnauthorizedError on 401', async () => {
     server.use(
-      http.get('/api/protected/', () => {
+      http.get('*/api/protected/', () => {
         return HttpResponse.json({ detail: 'Not authenticated' }, { status: 401 });
       }),
     );
@@ -35,7 +35,7 @@ describe('API Client', () => {
 
   it('throws ApiError on 400', async () => {
     server.use(
-      http.post('/api/bad-request/', () => {
+      http.post('*/api/bad-request/', () => {
         return HttpResponse.json({ name: ['This field is required.'] }, { status: 400 });
       }),
     );
@@ -51,7 +51,7 @@ describe('API Client', () => {
 
   it('handles 204 No Content', async () => {
     server.use(
-      http.delete('/api/delete-test/', () => {
+      http.delete('*/api/delete-test/', () => {
         return new HttpResponse(null, { status: 204 });
       }),
     );

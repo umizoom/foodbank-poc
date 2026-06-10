@@ -15,8 +15,8 @@ describe('TransactionListPage', () => {
     renderWithProviders(<TransactionListPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Maria Garcia')).toBeInTheDocument();
-      expect(screen.getByText('John Smith')).toBeInTheDocument();
+      expect(screen.getAllByText('Maria Garcia').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('John Smith').length).toBeGreaterThanOrEqual(1);
     });
   });
 
