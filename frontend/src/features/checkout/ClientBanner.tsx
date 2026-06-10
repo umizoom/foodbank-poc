@@ -55,7 +55,7 @@ export function ClientBanner({ client, cart }: ClientBannerProps) {
           )}
           {client.diaper_size && (
             <div className="flex items-center gap-1">
-              <span className="text-gray-500">Diapers:</span>
+              <span className="text-gray-500">Diaper Size:</span>
               <span className="font-medium">{client.diaper_size}</span>
             </div>
           )}
