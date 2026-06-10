@@ -22,9 +22,15 @@ export interface Client {
   name: string;
   card_id: string;
   balance: string;
+  allergies: string[];
+  diaper_size: string;
+  catchment_area: boolean;
+  notes: string;
   created_at: string;
   updated_at: string;
 }
+
+export const COMMON_ALLERGIES = ["Lactose free", "Gluten free"];
 
 export interface BalanceLog {
   id: number;

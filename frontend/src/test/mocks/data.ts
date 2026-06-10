@@ -13,8 +13,8 @@ export const mockItems: Item[] = [
 ];
 
 export const mockClients: Client[] = [
-  { id: 1, name: 'Maria Garcia', card_id: 'CARD-001', balance: '50.00', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
-  { id: 2, name: 'John Smith', card_id: 'CARD-002', balance: '25.75', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
+  { id: 1, name: 'Maria Garcia', card_id: 'CARD-001', balance: '50.00', allergies: ['Lactose free'], diaper_size: '', catchment_area: true, notes: '', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
+  { id: 2, name: 'John Smith', card_id: 'CARD-002', balance: '25.75', allergies: [], diaper_size: 'Size 3', catchment_area: true, notes: '', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
 ];
 
 export const mockCart: Cart = {

@@ -74,8 +74,19 @@ class StockUpdateSerializer(serializers.Serializer):
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ["id", "name", "card_id", "balance", "created_at", "updated_at"]
+        fields = [
+            "id", "name", "card_id", "balance",
+            "allergies", "diaper_size", "catchment_area", "notes",
+            "created_at", "updated_at",
+        ]
         read_only_fields = ["id", "balance", "created_at", "updated_at"]
+
+    def validate_allergies(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Allergies must be a list.")
+        if not all(isinstance(item, str) for item in value):
+            raise serializers.ValidationError("Each allergy must be a string.")
+        return [item.strip() for item in value if item.strip()]
 
 
 class BalanceAddSerializer(serializers.Serializer):
