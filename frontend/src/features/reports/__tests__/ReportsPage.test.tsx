@@ -2,6 +2,11 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/render';
 import { ReportsPage } from '../ReportsPage';
+import { downloadCsv } from '@/shared/utils/csv';
+
+vi.mock('@/shared/utils/csv', () => ({
+  downloadCsv: vi.fn(),
+}));
 
 describe('ReportsPage', () => {
   it('renders page title', () => {
@@ -106,5 +111,46 @@ describe('ReportsPage', () => {
     await user.click(screen.getByTestId('period-weekly'));
 
     expect(screen.getByTestId('stale-banner')).toBeInTheDocument();
+  });
+
+  it('Export CSV button is disabled when no report is loaded', () => {
+    renderWithProviders(<ReportsPage />);
+
+    expect(screen.getByTestId('export-csv-btn')).toBeDisabled();
+  });
+
+  it('Export CSV button is enabled after report runs', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ReportsPage />);
+
+    await user.click(screen.getByTestId('period-daily'));
+    await user.click(screen.getByTestId('run-report-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Milk')).toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId('export-csv-btn')).not.toBeDisabled();
+  });
+
+  it('calls downloadCsv with report data when Export CSV is clicked', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ReportsPage />);
+
+    await user.click(screen.getByTestId('period-daily'));
+    await user.click(screen.getByTestId('run-report-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Milk')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('export-csv-btn'));
+
+    expect(downloadCsv).toHaveBeenCalledTimes(1);
+    const [filename, headers, rows] = (downloadCsv as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(filename).toMatch(/^report_\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}\.csv$/);
+    expect(headers).toEqual(['Item Name', 'Category', 'Qty Sold', 'Total Amount', 'Current Stock']);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows[0]).toHaveLength(5);
   });
 });
