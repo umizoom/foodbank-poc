@@ -53,7 +53,7 @@ class TestCategoryViews:
         CategoryFactory.create_batch(3)
         response = api_client.get("/api/categories/")
         assert response.status_code == 200
-        assert len(response.data["results"]) == 3
+        assert len(response.data) == 3
 
     def test_create_category(self, api_client):
         response = api_client.post("/api/categories/", {"name": "Produce"})
@@ -72,7 +72,7 @@ class TestItemViews:
         ItemFactory.create_batch(3)
         response = api_client.get("/api/items/")
         assert response.status_code == 200
-        assert len(response.data["results"]) == 3
+        assert len(response.data) == 3
 
     def test_create_item(self, api_client):
         cat = CategoryFactory()
@@ -99,7 +99,7 @@ class TestClientViews:
         ClientFactory.create_batch(3)
         response = api_client.get("/api/clients/")
         assert response.status_code == 200
-        assert len(response.data["results"]) == 3
+        assert len(response.data) == 3
 
     def test_create_client(self, api_client):
         response = api_client.post(
@@ -175,7 +175,7 @@ class TestTransactionViews:
 
         response = api_client.get("/api/transactions/")
         assert response.status_code == 200
-        assert len(response.data["results"]) == 1
+        assert len(response.data) == 1
 
 
 @pytest.mark.django_db

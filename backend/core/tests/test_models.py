@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 from django.db import IntegrityError
 
@@ -26,8 +28,9 @@ class TestCategory:
 class TestItem:
     def test_create_item(self):
         item = ItemFactory(name="Eggs", cost="4.00", stock_count=30)
+        item.refresh_from_db()
         assert item.name == "Eggs"
-        assert item.cost == 4.00
+        assert item.cost == Decimal("4.00")
         assert item.stock_count == 30
 
     def test_is_low_stock_true(self):
@@ -52,9 +55,10 @@ class TestItem:
 class TestClient:
     def test_create_client(self):
         client = ClientFactory(name="Maria", card_id="RFID-123")
+        client.refresh_from_db()
         assert client.name == "Maria"
         assert client.card_id == "RFID-123"
-        assert client.balance == 100.00
+        assert client.balance == Decimal("100.00")
 
     def test_unique_card_id(self):
         ClientFactory(card_id="CARD-001")

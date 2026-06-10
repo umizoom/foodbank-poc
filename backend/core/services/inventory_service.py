@@ -32,13 +32,10 @@ def update_stock(item, quantity, operation="set"):
         Item.objects.filter(id=item.id).update(stock_count=F("stock_count") + quantity)
         item.refresh_from_db()
     elif operation == "subtract":
-        Item.objects.filter(id=item.id).update(
-            stock_count=F("stock_count") - quantity
-        )
         item.refresh_from_db()
-        if item.stock_count < 0:
-            item.stock_count = 0
-            item.save(update_fields=["stock_count", "updated_at"])
+        new_count = max(0, item.stock_count - quantity)
+        Item.objects.filter(id=item.id).update(stock_count=new_count)
+        item.refresh_from_db()
     return item
 
 
