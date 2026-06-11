@@ -93,7 +93,7 @@ export function NeighbourFormPage() {
           {(props) => (
             <input
               {...register('name', { required: 'Name is required', maxLength: { value: 200, message: 'Name must be under 200 characters' } })}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="neighbour-name-input"
               {...props}
             />
@@ -104,7 +104,7 @@ export function NeighbourFormPage() {
           {(props) => (
             <input
               {...register('card_id', { required: 'Card ID is required', maxLength: { value: 100, message: 'Card ID must be under 100 characters' } })}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="neighbour-card-input"
               {...props}
             />
@@ -160,7 +160,7 @@ export function NeighbourFormPage() {
                         }
                       }}
                       placeholder="Add custom allergy..."
-                      className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <button
                       type="button"
@@ -203,7 +203,7 @@ export function NeighbourFormPage() {
             <input
               {...register('diaper_size')}
               placeholder="e.g. Size 3, Newborn, Pull-ups"
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="neighbour-diaper-input"
               {...props}
             />
@@ -230,7 +230,7 @@ export function NeighbourFormPage() {
               {...register('notes')}
               rows={3}
               placeholder="Additional notes about this neighbour..."
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="neighbour-notes-input"
               {...props}
             />

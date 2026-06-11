@@ -51,7 +51,7 @@ export function LoginForm() {
           <input
             {...register('username', { required: 'Username is required' })}
             type="text"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             data-testid="login-username-input"
             {...props}
           />
@@ -64,7 +64,7 @@ export function LoginForm() {
             <input
               {...register('password', { required: 'Password is required' })}
               type={showPassword ? 'text' : 'password'}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="login-password-input"
               {...props}
             />

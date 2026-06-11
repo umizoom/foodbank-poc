@@ -94,7 +94,7 @@ export function InventoryFormPage() {
           {(props) => (
             <input
               {...register('name', { required: 'Item name is required', maxLength: { value: 200, message: 'Name must be under 200 characters' } })}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="item-name-input"
               {...props}
             />
@@ -105,7 +105,7 @@ export function InventoryFormPage() {
           {(props) => (
             <select
               {...register('category', { required: 'Category is required' })}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="item-category-select"
               {...props}
             >
@@ -127,7 +127,7 @@ export function InventoryFormPage() {
               })}
               type="text"
               inputMode="decimal"
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="item-cost-input"
               {...props}
             />
@@ -145,7 +145,7 @@ export function InventoryFormPage() {
                 })}
                 type="number"
                 min="0"
-                className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 data-testid="item-stock-input"
                 {...props}
               />
@@ -163,7 +163,7 @@ export function InventoryFormPage() {
               })}
               type="number"
               min="0"
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="item-threshold-input"
               {...props}
             />

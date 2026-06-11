@@ -30,19 +30,6 @@ export function TransactionListPage() {
     { key: 'total', header: 'Total', render: (tx) => <CurrencyDisplay amount={tx.total_amount} /> },
     { key: 'items', header: 'Items', render: (tx) => tx.item_count },
     { key: 'admin', header: 'Processed By', render: (tx) => tx.admin_username },
-    {
-      key: 'actions',
-      header: '',
-      render: (tx) => (
-        <button
-          onClick={() => navigate(`/transactions/${tx.id}`)}
-          className="text-blue-600 hover:underline text-sm"
-          data-testid={`view-transaction-${tx.id}`}
-        >
-          View
-        </button>
-      ),
-    },
   ];
 
   return (
@@ -56,7 +43,7 @@ export function TransactionListPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-gray-300 px-3 py-2 text-base"
             data-testid="filter-date-from"
           />
         </div>
@@ -66,7 +53,7 @@ export function TransactionListPage() {
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-gray-300 px-3 py-2 text-base"
             data-testid="filter-date-to"
           />
         </div>
@@ -75,7 +62,7 @@ export function TransactionListPage() {
           <select
             value={neighbourFilter ?? ''}
             onChange={(e) => setNeighbourFilter(e.target.value ? Number(e.target.value) : undefined)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-gray-300 px-3 py-2 text-base"
             data-testid="filter-neighbour"
           >
             <option value="">All Neighbours</option>
@@ -92,6 +79,7 @@ export function TransactionListPage() {
         loading={loading}
         emptyMessage="No transactions found."
         keyExtractor={(tx) => tx.id}
+        onRowClick={(tx) => navigate(`/transactions/${tx.id}`)}
       />
     </div>
   );

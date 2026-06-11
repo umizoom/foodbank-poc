@@ -11,7 +11,7 @@ export function CategoryFilter({ categories, value, onChange }: CategoryFilterPr
     <select
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
-      className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      className="rounded-md border border-gray-300 px-3 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
       data-testid="category-filter"
     >
       <option value="">All Categories</option>

@@ -14,6 +14,7 @@ interface DataTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   keyExtractor: (item: T) => string | number;
+  onRowClick?: (item: T) => void;
 }
 
 export function DataTable<T>({
@@ -22,6 +23,7 @@ export function DataTable<T>({
   loading = false,
   emptyMessage = 'No data found.',
   keyExtractor,
+  onRowClick,
 }: DataTableProps<T>) {
   return (
     <SpinnerOverlay loading={loading}>
@@ -48,7 +50,14 @@ export function DataTable<T>({
               </tr>
             ) : (
               data.map((item) => (
-                <tr key={keyExtractor(item)} className="hover:bg-gray-50">
+                <tr
+                  key={keyExtractor(item)}
+                  className={`hover:bg-gray-50 ${onRowClick ? 'cursor-pointer active:bg-gray-100' : ''}`}
+                  onClick={onRowClick ? () => onRowClick(item) : undefined}
+                  onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(item); } } : undefined}
+                  role={onRowClick ? 'link' : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                >
                   {columns.map((col) => (
                     <td key={col.key} className={`px-6 py-4 whitespace-nowrap text-sm ${col.className || ''}`}>
                       {col.render(item)}

@@ -71,7 +71,7 @@ export function CategoryManagementPage() {
         <input
           {...register('name', { required: 'Category name is required' })}
           placeholder="New category name"
-          className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="flex-1 rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           data-testid="category-name-input"
         />
         <Button type="submit" data-testid="add-category-button">Add</Button>
@@ -100,7 +100,7 @@ export function CategoryManagementPage() {
                       <input
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="rounded-md border border-gray-300 px-2 py-1 text-sm"
+                        className="rounded-md border border-gray-300 px-2 py-1 text-base"
                         data-testid={`edit-category-input-${cat.id}`}
                       />
                     ) : (

@@ -19,24 +19,15 @@ export function NeighbourListPage() {
     { key: 'balance', header: 'Balance', render: (c) => <CurrencyDisplay amount={c.balance} /> },
     {
       key: 'actions',
-      header: 'Actions',
+      header: '',
       render: (c) => (
-        <div className="flex gap-2">
-          <button
-            onClick={() => navigate(`/neighbours/${c.id}`)}
-            className="text-blue-600 hover:underline text-sm"
-            data-testid={`view-neighbour-${c.id}`}
-          >
-            View
-          </button>
-          <button
-            onClick={() => navigate(`/neighbours/${c.id}/edit`)}
-            className="text-blue-600 hover:underline text-sm"
-            data-testid={`edit-neighbour-${c.id}`}
-          >
-            Edit
-          </button>
-        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); navigate(`/neighbours/${c.id}/edit`); }}
+          className="text-blue-600 hover:underline text-sm"
+          data-testid={`edit-neighbour-${c.id}`}
+        >
+          Edit
+        </button>
       ),
     },
   ];
@@ -62,6 +53,7 @@ export function NeighbourListPage() {
         loading={loading}
         emptyMessage="No neighbours registered. Register a new neighbour."
         keyExtractor={(c) => c.id}
+        onRowClick={(c) => navigate(`/neighbours/${c.id}`)}
       />
     </div>
   );
