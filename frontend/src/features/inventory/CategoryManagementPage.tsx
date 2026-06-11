@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useCategories } from '@/shared/hooks/useCategories';
 import { api } from '@/shared/api/client';
@@ -14,6 +15,7 @@ interface CategoryFormData {
 }
 
 export function CategoryManagementPage() {
+  const navigate = useNavigate();
   const { categories, loading, refetch } = useCategories();
   const { addToast } = useNotification();
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -94,7 +96,11 @@ export function CategoryManagementPage() {
               <tr><td colSpan={3} className="px-6 py-8 text-center text-gray-500">No categories yet.</td></tr>
             ) : (
               categories.map((cat) => (
-                <tr key={cat.id} className="hover:bg-gray-50">
+                <tr
+                  key={cat.id}
+                  className={`hover:bg-gray-50 ${editingId === cat.id ? '' : 'cursor-pointer'}`}
+                  onClick={() => { if (editingId !== cat.id) navigate(`/inventory/categories/${cat.id}`); }}
+                >
                   <td className="px-6 py-4 text-sm">
                     {editingId === cat.id ? (
                       <input
@@ -104,27 +110,33 @@ export function CategoryManagementPage() {
                         data-testid={`edit-category-input-${cat.id}`}
                       />
                     ) : (
-                      <span className="font-medium text-gray-900">{cat.name}</span>
+                      <Link
+                        to={`/inventory/categories/${cat.id}`}
+                        className="font-medium text-blue-600 hover:underline hover:text-blue-800"
+                        data-testid={`category-link-${cat.id}`}
+                      >
+                        {cat.name}
+                      </Link>
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">{cat.item_count ?? 0}</td>
                   <td className="px-6 py-4 text-sm">
                     {editingId === cat.id ? (
                       <div className="flex gap-2">
-                        <button onClick={() => onSaveEdit(cat.id)} className="text-green-600 hover:underline">Save</button>
-                        <button onClick={() => setEditingId(null)} className="text-gray-600 hover:underline">Cancel</button>
+                        <button onClick={(e) => { e.stopPropagation(); onSaveEdit(cat.id); }} className="text-green-600 hover:underline">Save</button>
+                        <button onClick={(e) => { e.stopPropagation(); setEditingId(null); }} className="text-gray-600 hover:underline">Cancel</button>
                       </div>
                     ) : (
                       <div className="flex gap-2">
                         <button
-                          onClick={() => { setEditingId(cat.id); setEditName(cat.name); }}
+                          onClick={(e) => { e.stopPropagation(); setEditingId(cat.id); setEditName(cat.name); }}
                           className="text-blue-600 hover:underline"
                           data-testid={`rename-category-${cat.id}`}
                         >
                           Rename
                         </button>
                         <button
-                          onClick={() => setDeleteTarget(cat)}
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(cat); }}
                           disabled={(cat.item_count ?? 0) > 0}
                           className={`${(cat.item_count ?? 0) > 0 ? 'text-gray-300 cursor-not-allowed' : 'text-red-600 hover:underline'}`}
                           data-testid={`delete-category-${cat.id}`}

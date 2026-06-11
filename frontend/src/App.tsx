@@ -8,6 +8,7 @@ import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { InventoryListPage } from '@/features/inventory/InventoryListPage';
 import { InventoryFormPage } from '@/features/inventory/InventoryFormPage';
 import { CategoryManagementPage } from '@/features/inventory/CategoryManagementPage';
+import { CategoryItemsPage } from '@/features/inventory/CategoryItemsPage';
 import { NeighbourListPage } from '@/features/neighbours/NeighbourListPage';
 import { NeighbourFormPage } from '@/features/neighbours/NeighbourFormPage';
 import { NeighbourDetailPage } from '@/features/neighbours/NeighbourDetailPage';
@@ -30,6 +31,7 @@ export function App() {
                 <Route path="/inventory/new" element={<InventoryFormPage />} />
                 <Route path="/inventory/:id/edit" element={<InventoryFormPage />} />
                 <Route path="/inventory/categories" element={<CategoryManagementPage />} />
+                <Route path="/inventory/categories/:categoryId" element={<CategoryItemsPage />} />
                 <Route path="/neighbours" element={<NeighbourListPage />} />
                 <Route path="/neighbours/new" element={<NeighbourFormPage />} />
                 <Route path="/neighbours/:id" element={<NeighbourDetailPage />} />

@@ -42,10 +42,15 @@ export const handlers = [
   http.get('*/api/items/', ({ request }) => {
     const url = new URL(request.url);
     const lowStock = url.searchParams.get('low_stock');
+    const category = url.searchParams.get('category');
+    let filtered = mockItems;
     if (lowStock === 'true') {
-      return HttpResponse.json(mockItems.filter((i) => i.is_low_stock));
+      filtered = filtered.filter((i) => i.is_low_stock);
     }
-    return HttpResponse.json(mockItems);
+    if (category) {
+      filtered = filtered.filter((i) => i.category === Number(category));
+    }
+    return HttpResponse.json(filtered);
   }),
 
   http.get('*/api/items/:id/', ({ params }) => {
