@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { mockCategories, mockItems, mockClients, mockCart, mockTransactionList, mockTransaction, mockItemsSoldReport } from './data';
+import { mockCategories, mockItems, mockNeighbours, mockCart, mockTransactionList, mockTransaction, mockItemsSoldReport } from './data';
 
 export const handlers = [
   // Auth
@@ -72,37 +72,37 @@ export const handlers = [
     return HttpResponse.json({ ...mockItems[0], stock_count: 25 });
   }),
 
-  // Clients
-  http.get('*/api/clients/', () => {
-    return HttpResponse.json(mockClients);
+  // Neighbours
+  http.get('*/api/neighbours/', () => {
+    return HttpResponse.json(mockNeighbours);
   }),
 
-  http.get('*/api/clients/lookup/', ({ request }) => {
+  http.get('*/api/neighbours/lookup/', ({ request }) => {
     const url = new URL(request.url);
     const cardId = url.searchParams.get('card_id');
-    const client = mockClients.find((c) => c.card_id === cardId);
-    if (!client) return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
-    return HttpResponse.json(client);
+    const neighbour = mockNeighbours.find((c) => c.card_id === cardId);
+    if (!neighbour) return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
+    return HttpResponse.json(neighbour);
   }),
 
-  http.get('*/api/clients/:id/', ({ params }) => {
-    const client = mockClients.find((c) => c.id === Number(params.id));
-    if (!client) return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
-    return HttpResponse.json(client);
+  http.get('*/api/neighbours/:id/', ({ params }) => {
+    const neighbour = mockNeighbours.find((c) => c.id === Number(params.id));
+    if (!neighbour) return HttpResponse.json({ detail: 'Not found' }, { status: 404 });
+    return HttpResponse.json(neighbour);
   }),
 
-  http.post('*/api/clients/', async ({ request }) => {
+  http.post('*/api/neighbours/', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({ id: 99, ...body, balance: '0.00', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }, { status: 201 });
   }),
 
-  http.put('*/api/clients/:id/', async ({ request, params }) => {
+  http.put('*/api/neighbours/:id/', async ({ request, params }) => {
     const body = (await request.json()) as Record<string, unknown>;
     return HttpResponse.json({ id: Number(params.id), ...body, balance: '50.00', created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
   }),
 
-  http.post('*/api/clients/:id/balance/', () => {
-    return HttpResponse.json({ ...mockClients[0], balance: '100.00' });
+  http.post('*/api/neighbours/:id/balance/', () => {
+    return HttpResponse.json({ ...mockNeighbours[0], balance: '100.00' });
   }),
 
   // Carts

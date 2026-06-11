@@ -33,8 +33,8 @@ export function TransactionDetailPage() {
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
         <dl className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div>
-            <dt className="text-sm text-gray-500">Client</dt>
-            <dd className="text-base font-medium text-gray-900">{transaction.client_name}</dd>
+            <dt className="text-sm text-gray-500">Neighbour</dt>
+            <dd className="text-base font-medium text-gray-900">{transaction.neighbour_name}</dd>
           </div>
           <div>
             <dt className="text-sm text-gray-500">Date</dt>

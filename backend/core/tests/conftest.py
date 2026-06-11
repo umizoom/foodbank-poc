@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from core.models import Category, Client, Item
+from core.models import Category, Item, Neighbour
 
 User = get_user_model()
 
@@ -43,9 +43,9 @@ def item(category):
 
 
 @pytest.fixture
-def client_record(db):
-    return Client.objects.create(
-        name="Test Client",
+def neighbour_record(db):
+    return Neighbour.objects.create(
+        name="Test Neighbour",
         card_id="CARD-001",
         balance="50.00",
     )

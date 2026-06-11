@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from core.models import Category, Client, Item, Transaction, TransactionItem
+from core.models import Category, Item, Neighbour, Transaction, TransactionItem
 
 User = get_user_model()
 
@@ -36,7 +36,7 @@ class Command(BaseCommand):
         self._create_categories()
         self._create_items()
         self._create_admin(options["admin_password"])
-        self._create_clients()
+        self._create_neighbours()
         self._create_transactions()
         self.stdout.write(self.style.SUCCESS("Seed data created successfully"))
 
@@ -129,8 +129,8 @@ class Command(BaseCommand):
         )
         self.stdout.write("Admin user created (username: admin)")
 
-    def _create_clients(self):
-        default_clients = [
+    def _create_neighbours(self):
+        default_neighbours = [
             {
                 "name": "Maria Garcia",
                 "card_id": "CARD-001",
@@ -166,21 +166,21 @@ class Command(BaseCommand):
             },
         ]
         created_count = 0
-        for client_data in default_clients:
-            defaults = {"name": client_data["name"], "balance": client_data["balance"]}
-            if "allergies" in client_data:
-                defaults["allergies"] = client_data["allergies"]
-            if "diaper_size" in client_data:
-                defaults["diaper_size"] = client_data["diaper_size"]
-            if "notes" in client_data:
-                defaults["notes"] = client_data["notes"]
-            _, created = Client.objects.update_or_create(
-                card_id=client_data["card_id"],
+        for neighbour_data in default_neighbours:
+            defaults = {"name": neighbour_data["name"], "balance": neighbour_data["balance"]}
+            if "allergies" in neighbour_data:
+                defaults["allergies"] = neighbour_data["allergies"]
+            if "diaper_size" in neighbour_data:
+                defaults["diaper_size"] = neighbour_data["diaper_size"]
+            if "notes" in neighbour_data:
+                defaults["notes"] = neighbour_data["notes"]
+            _, created = Neighbour.objects.update_or_create(
+                card_id=neighbour_data["card_id"],
                 defaults=defaults,
             )
             if created:
                 created_count += 1
-        self.stdout.write(f"Clients: {created_count} created, {len(default_clients) - created_count} updated")
+        self.stdout.write(f"Neighbours: {created_count} created, {len(default_neighbours) - created_count} updated")
 
     def _create_transactions(self):
         admin = User.objects.filter(username="admin").first()
@@ -188,32 +188,32 @@ class Command(BaseCommand):
             self.stdout.write("Admin user not found, skipping transactions")
             return
 
-        clients = list(Client.objects.all()[:5])
+        neighbours = list(Neighbour.objects.all()[:5])
         items = list(Item.objects.all())
-        if not clients or not items:
-            self.stdout.write("No clients or items found, skipping transactions")
+        if not neighbours or not items:
+            self.stdout.write("No neighbours or items found, skipping transactions")
             return
 
         now = timezone.now()
         transaction_data = [
-            {"client_idx": 0, "days_ago": 0, "item_indices": [0, 1, 4], "quantities": [2, 1, 3]},
-            {"client_idx": 1, "days_ago": 0, "item_indices": [2, 5], "quantities": [1, 2]},
-            {"client_idx": 2, "days_ago": 1, "item_indices": [3, 7, 10], "quantities": [1, 2, 1]},
-            {"client_idx": 3, "days_ago": 2, "item_indices": [1, 8], "quantities": [3, 1]},
-            {"client_idx": 4, "days_ago": 3, "item_indices": [0, 6, 11], "quantities": [1, 1, 2]},
-            {"client_idx": 0, "days_ago": 5, "item_indices": [9, 12], "quantities": [2, 1]},
-            {"client_idx": 1, "days_ago": 7, "item_indices": [4, 5, 13], "quantities": [1, 3, 2]},
-            {"client_idx": 2, "days_ago": 10, "item_indices": [0, 2, 8], "quantities": [2, 1, 1]},
-            {"client_idx": 3, "days_ago": 14, "item_indices": [6, 15], "quantities": [1, 2]},
-            {"client_idx": 4, "days_ago": 18, "item_indices": [3, 7, 14], "quantities": [2, 1, 3]},
-            {"client_idx": 0, "days_ago": 22, "item_indices": [10, 11, 1], "quantities": [1, 2, 1]},
-            {"client_idx": 1, "days_ago": 25, "item_indices": [9, 12, 16], "quantities": [3, 1, 2]},
-            {"client_idx": 2, "days_ago": 28, "item_indices": [5, 13], "quantities": [2, 1]},
+            {"neighbour_idx": 0, "days_ago": 0, "item_indices": [0, 1, 4], "quantities": [2, 1, 3]},
+            {"neighbour_idx": 1, "days_ago": 0, "item_indices": [2, 5], "quantities": [1, 2]},
+            {"neighbour_idx": 2, "days_ago": 1, "item_indices": [3, 7, 10], "quantities": [1, 2, 1]},
+            {"neighbour_idx": 3, "days_ago": 2, "item_indices": [1, 8], "quantities": [3, 1]},
+            {"neighbour_idx": 4, "days_ago": 3, "item_indices": [0, 6, 11], "quantities": [1, 1, 2]},
+            {"neighbour_idx": 0, "days_ago": 5, "item_indices": [9, 12], "quantities": [2, 1]},
+            {"neighbour_idx": 1, "days_ago": 7, "item_indices": [4, 5, 13], "quantities": [1, 3, 2]},
+            {"neighbour_idx": 2, "days_ago": 10, "item_indices": [0, 2, 8], "quantities": [2, 1, 1]},
+            {"neighbour_idx": 3, "days_ago": 14, "item_indices": [6, 15], "quantities": [1, 2]},
+            {"neighbour_idx": 4, "days_ago": 18, "item_indices": [3, 7, 14], "quantities": [2, 1, 3]},
+            {"neighbour_idx": 0, "days_ago": 22, "item_indices": [10, 11, 1], "quantities": [1, 2, 1]},
+            {"neighbour_idx": 1, "days_ago": 25, "item_indices": [9, 12, 16], "quantities": [3, 1, 2]},
+            {"neighbour_idx": 2, "days_ago": 28, "item_indices": [5, 13], "quantities": [2, 1]},
         ]
 
         created_count = 0
         for td in transaction_data:
-            client = clients[td["client_idx"]]
+            neighbour = neighbours[td["neighbour_idx"]]
             txn_items = []
             total = Decimal("0.00")
 
@@ -230,7 +230,7 @@ class Command(BaseCommand):
                 continue
 
             txn = Transaction.objects.create(
-                client=client,
+                neighbour=neighbour,
                 admin=admin,
                 total=total,
             )

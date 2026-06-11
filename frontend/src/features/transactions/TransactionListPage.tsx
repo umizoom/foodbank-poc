@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTransactions } from '@/shared/hooks/useTransactions';
-import { useClients } from '@/shared/hooks/useClients';
+import { useNeighbours } from '@/shared/hooks/useNeighbours';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { DataTable, type Column } from '@/shared/components/DataTable';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
@@ -11,14 +11,14 @@ export function TransactionListPage() {
   const navigate = useNavigate();
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [clientFilter, setClientFilter] = useState<number | undefined>();
+  const [neighbourFilter, setNeighbourFilter] = useState<number | undefined>();
 
   const { transactions, loading } = useTransactions({
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
-    client: clientFilter,
+    neighbour: neighbourFilter,
   });
-  const { clients } = useClients();
+  const { neighbours } = useNeighbours();
 
   const columns: Column<TransactionListItem>[] = [
     {
@@ -26,7 +26,7 @@ export function TransactionListPage() {
       header: 'Date/Time',
       render: (tx) => new Date(tx.created_at).toLocaleString(),
     },
-    { key: 'client', header: 'Client', render: (tx) => tx.client_name },
+    { key: 'neighbour', header: 'Neighbour', render: (tx) => tx.neighbour_name },
     { key: 'total', header: 'Total', render: (tx) => <CurrencyDisplay amount={tx.total_amount} /> },
     { key: 'items', header: 'Items', render: (tx) => tx.item_count },
     { key: 'admin', header: 'Processed By', render: (tx) => tx.admin_username },
@@ -71,15 +71,15 @@ export function TransactionListPage() {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Client</label>
+          <label className="block text-xs text-gray-500 mb-1">Neighbour</label>
           <select
-            value={clientFilter ?? ''}
-            onChange={(e) => setClientFilter(e.target.value ? Number(e.target.value) : undefined)}
+            value={neighbourFilter ?? ''}
+            onChange={(e) => setNeighbourFilter(e.target.value ? Number(e.target.value) : undefined)}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-            data-testid="filter-client"
+            data-testid="filter-neighbour"
           >
-            <option value="">All Clients</option>
-            {clients.map((c) => (
+            <option value="">All Neighbours</option>
+            {neighbours.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>

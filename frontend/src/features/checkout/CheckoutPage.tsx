@@ -2,22 +2,22 @@ import { useState, useCallback } from 'react';
 import { api } from '@/shared/api/client';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { CardSimulator } from './CardSimulator';
-import { ClientBanner } from './ClientBanner';
+import { NeighbourBanner } from './NeighbourBanner';
 import { ItemBrowser } from './ItemBrowser';
 import { CartPanel } from './CartPanel';
 import { CheckoutResult } from './CheckoutResult';
-import type { Client, Cart, Transaction } from '@/shared/api/types';
+import type { Neighbour, Cart, Transaction } from '@/shared/api/types';
 
 type Phase = 'identify' | 'cart' | 'result';
 
 export function CheckoutPage() {
   const [phase, setPhase] = useState<Phase>('identify');
-  const [client, setClient] = useState<Client | null>(null);
+  const [neighbour, setNeighbour] = useState<Neighbour | null>(null);
   const [cart, setCart] = useState<Cart | null>(null);
   const [transaction, setTransaction] = useState<Transaction | null>(null);
 
-  const handleClientIdentified = useCallback((c: Client, newCart: Cart) => {
-    setClient(c);
+  const handleNeighbourIdentified = useCallback((n: Neighbour, newCart: Cart) => {
+    setNeighbour(n);
     setCart(newCart);
     setPhase('cart');
   }, []);
@@ -37,13 +37,13 @@ export function CheckoutPage() {
     if (cart) {
       await api.delete(`/api/carts/${cart.id}/`);
     }
-    setClient(null);
+    setNeighbour(null);
     setCart(null);
     setPhase('identify');
   }, [cart]);
 
   const handleNewCheckout = useCallback(() => {
-    setClient(null);
+    setNeighbour(null);
     setCart(null);
     setTransaction(null);
     setPhase('identify');
@@ -53,16 +53,16 @@ export function CheckoutPage() {
     <div>
       <PageHeader title="Checkout" />
 
-      {phase === 'identify' && <CardSimulator onClientIdentified={handleClientIdentified} />}
+      {phase === 'identify' && <CardSimulator onNeighbourIdentified={handleNeighbourIdentified} />}
 
-      {phase === 'cart' && client && cart && (
+      {phase === 'cart' && neighbour && cart && (
         <>
-          <ClientBanner client={client} cart={cart} />
+          <NeighbourBanner neighbour={neighbour} cart={cart} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
             <ItemBrowser cart={cart} onCartUpdate={refreshCart} />
             <CartPanel
               cart={cart}
-              clientBalance={client.balance}
+              neighbourBalance={neighbour.balance}
               onCartUpdate={refreshCart}
               onCheckoutSuccess={handleCheckoutSuccess}
               onCancel={handleCancel}

@@ -17,7 +17,7 @@ export interface Item {
   updated_at: string;
 }
 
-export interface Client {
+export interface Neighbour {
   id: number;
   name: string;
   card_id: string;
@@ -34,7 +34,7 @@ export const COMMON_ALLERGIES = ["Lactose free", "Gluten free"];
 
 export interface BalanceLog {
   id: number;
-  client: number;
+  neighbour: number;
   amount: string;
   admin_username: string;
   created_at: string;
@@ -51,9 +51,9 @@ export interface CartItem {
 
 export interface Cart {
   id: number;
-  client: number;
-  client_name: string;
-  client_balance: string;
+  neighbour: number;
+  neighbour_name: string;
+  neighbour_balance: string;
   status: 'open' | 'checked_out' | 'cancelled';
   items: CartItem[];
   total: string;
@@ -70,8 +70,8 @@ export interface TransactionItem {
 
 export interface Transaction {
   id: number;
-  client: number;
-  client_name: string;
+  neighbour: number;
+  neighbour_name: string;
   admin_username: string;
   total_amount: string;
   items: TransactionItem[];
@@ -80,7 +80,7 @@ export interface Transaction {
 
 export interface TransactionListItem {
   id: number;
-  client_name: string;
+  neighbour_name: string;
   admin_username: string;
   total_amount: string;
   item_count: number;
@@ -109,7 +109,7 @@ export interface BalanceAddPayload {
 }
 
 export interface CartCreatePayload {
-  client_id: number;
+  neighbour_id: number;
 }
 
 export interface CartItemAddPayload {

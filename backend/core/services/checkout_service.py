@@ -9,14 +9,14 @@ from core.exceptions import (
     InsufficientBalanceError,
     InsufficientStockError,
 )
-from core.models import Cart, CartItem, Client, Item, Transaction, TransactionItem
+from core.models import Cart, CartItem, Item, Neighbour, Transaction, TransactionItem
 
 logger = logging.getLogger("core.security")
 
 
-def create_cart(client_id, admin):
-    client = Client.objects.get(id=client_id)
-    return Cart.objects.create(client=client, admin=admin)
+def create_cart(neighbour_id, admin):
+    neighbour = Neighbour.objects.get(id=neighbour_id)
+    return Cart.objects.create(neighbour=neighbour, admin=admin)
 
 
 def get_cart(cart_id):
@@ -72,7 +72,7 @@ def get_cart_summary(cart_id):
         "cart": cart,
         "items": cart_items,
         "total": total,
-        "client_balance": cart.client.balance,
+        "neighbour_balance": cart.neighbour.balance,
     }
 
 
@@ -100,12 +100,12 @@ def process_checkout(cart_id):
         total += cart_item.item.cost * cart_item.quantity
 
     # Validate balance
-    client = Client.objects.select_for_update().get(id=cart.client_id)
-    if client.balance < total:
-        raise InsufficientBalanceError(client.balance, total)
+    neighbour = Neighbour.objects.select_for_update().get(id=cart.neighbour_id)
+    if neighbour.balance < total:
+        raise InsufficientBalanceError(neighbour.balance, total)
 
     # Deduct balance
-    Client.objects.filter(id=client.id).update(balance=F("balance") - total)
+    Neighbour.objects.filter(id=neighbour.id).update(balance=F("balance") - total)
 
     # Decrement stock
     for cart_item in cart_items:
@@ -115,7 +115,7 @@ def process_checkout(cart_id):
 
     # Create transaction record with snapshots
     txn = Transaction.objects.create(
-        client=client,
+        neighbour=neighbour,
         admin=cart.admin,
         total=total,
     )
@@ -137,7 +137,7 @@ def process_checkout(cart_id):
         "Checkout processed",
         extra={
             "transaction_id": txn.id,
-            "client_id": client.id,
+            "neighbour_id": neighbour.id,
             "total": str(total),
             "admin": cart.admin.username,
         },

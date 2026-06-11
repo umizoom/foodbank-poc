@@ -7,8 +7,8 @@ from core.models import (
     Cart,
     CartItem,
     Category,
-    Client,
     Item,
+    Neighbour,
     Transaction,
     TransactionItem,
 )
@@ -71,9 +71,9 @@ class StockUpdateSerializer(serializers.Serializer):
         return value
 
 
-class ClientSerializer(serializers.ModelSerializer):
+class NeighbourSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Client
+        model = Neighbour
         fields = [
             "id", "name", "card_id", "balance",
             "allergies", "diaper_size", "catchment_area", "notes",
@@ -137,9 +137,9 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
-    client_name = serializers.CharField(source="client.name", read_only=True)
-    client_balance = serializers.DecimalField(
-        source="client.balance", max_digits=10, decimal_places=2, read_only=True
+    neighbour_name = serializers.CharField(source="neighbour.name", read_only=True)
+    neighbour_balance = serializers.DecimalField(
+        source="neighbour.balance", max_digits=10, decimal_places=2, read_only=True
     )
     total = serializers.SerializerMethodField()
 
@@ -147,21 +147,21 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = [
             "id",
-            "client",
-            "client_name",
-            "client_balance",
+            "neighbour",
+            "neighbour_name",
+            "neighbour_balance",
             "items",
             "total",
             "created_at",
         ]
-        read_only_fields = ["id", "client_name", "client_balance", "items", "total", "created_at"]
+        read_only_fields = ["id", "neighbour_name", "neighbour_balance", "items", "total", "created_at"]
 
     def get_total(self, obj):
         return sum(item.line_total for item in obj.items.all())
 
 
 class CartCreateSerializer(serializers.Serializer):
-    client_id = serializers.IntegerField()
+    neighbour_id = serializers.IntegerField()
 
 
 class CartItemAddSerializer(serializers.Serializer):
@@ -181,7 +181,7 @@ class TransactionItemSerializer(serializers.ModelSerializer):
 
 class TransactionSerializer(serializers.ModelSerializer):
     items = TransactionItemSerializer(many=True, read_only=True)
-    client_name = serializers.CharField(source="client.name", read_only=True)
+    neighbour_name = serializers.CharField(source="neighbour.name", read_only=True)
     admin_username = serializers.CharField(source="admin.username", read_only=True)
     total_amount = serializers.DecimalField(source="total", max_digits=10, decimal_places=2, read_only=True)
 
@@ -189,8 +189,8 @@ class TransactionSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = [
             "id",
-            "client",
-            "client_name",
+            "neighbour",
+            "neighbour_name",
             "admin_username",
             "total_amount",
             "items",
@@ -199,14 +199,14 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 
 class TransactionListSerializer(serializers.ModelSerializer):
-    client_name = serializers.CharField(source="client.name", read_only=True)
+    neighbour_name = serializers.CharField(source="neighbour.name", read_only=True)
     admin_username = serializers.CharField(source="admin.username", read_only=True)
     total_amount = serializers.DecimalField(source="total", max_digits=10, decimal_places=2, read_only=True)
     item_count = serializers.IntegerField(source="items.count", read_only=True)
 
     class Meta:
         model = Transaction
-        fields = ["id", "client", "client_name", "admin_username", "total_amount", "item_count", "created_at"]
+        fields = ["id", "neighbour", "neighbour_name", "admin_username", "total_amount", "item_count", "created_at"]
 
 
 class LoginSerializer(serializers.Serializer):

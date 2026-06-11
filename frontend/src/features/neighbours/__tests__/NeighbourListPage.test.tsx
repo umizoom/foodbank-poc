@@ -1,19 +1,19 @@
 import { screen, waitFor } from '@testing-library/react';
 import { renderWithProviders } from '@/test/utils/render';
-import { ClientListPage } from '../ClientListPage';
+import { NeighbourListPage } from '../NeighbourListPage';
 
-describe('ClientListPage', () => {
+describe('NeighbourListPage', () => {
   it('renders page title and register button', async () => {
-    renderWithProviders(<ClientListPage />);
+    renderWithProviders(<NeighbourListPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Clients')).toBeInTheDocument();
+      expect(screen.getByText('Neighbours')).toBeInTheDocument();
     });
-    expect(screen.getByTestId('register-client-button')).toBeInTheDocument();
+    expect(screen.getByTestId('register-neighbour-button')).toBeInTheDocument();
   });
 
-  it('displays clients in the table', async () => {
-    renderWithProviders(<ClientListPage />);
+  it('displays neighbours in the table', async () => {
+    renderWithProviders(<NeighbourListPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Maria Garcia')).toBeInTheDocument();
@@ -22,7 +22,7 @@ describe('ClientListPage', () => {
   });
 
   it('shows card IDs', async () => {
-    renderWithProviders(<ClientListPage />);
+    renderWithProviders(<NeighbourListPage />);
 
     await waitFor(() => {
       expect(screen.getByText('CARD-001')).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe('ClientListPage', () => {
   });
 
   it('renders search input', () => {
-    renderWithProviders(<ClientListPage />);
+    renderWithProviders(<NeighbourListPage />);
     expect(screen.getByTestId('search-input')).toBeInTheDocument();
   });
 });

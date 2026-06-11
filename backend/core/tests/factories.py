@@ -1,7 +1,7 @@
 import factory
 from django.contrib.auth import get_user_model
 
-from core.models import Cart, CartItem, Category, Client, Item, Transaction, TransactionItem
+from core.models import Cart, CartItem, Category, Item, Neighbour, Transaction, TransactionItem
 
 User = get_user_model()
 
@@ -33,9 +33,9 @@ class ItemFactory(factory.django.DjangoModelFactory):
     low_stock_threshold = 10
 
 
-class ClientFactory(factory.django.DjangoModelFactory):
+class NeighbourFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Client
+        model = Neighbour
 
     name = factory.Faker("name")
     card_id = factory.Sequence(lambda n: f"CARD-{n:04d}")
@@ -46,7 +46,7 @@ class CartFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Cart
 
-    client = factory.SubFactory(ClientFactory)
+    neighbour = factory.SubFactory(NeighbourFactory)
     admin = factory.SubFactory(UserFactory)
 
 
@@ -63,7 +63,7 @@ class TransactionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Transaction
 
-    client = factory.SubFactory(ClientFactory)
+    neighbour = factory.SubFactory(NeighbourFactory)
     admin = factory.SubFactory(UserFactory)
     total = "10.00"
 

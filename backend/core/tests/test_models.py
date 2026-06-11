@@ -3,8 +3,8 @@ from decimal import Decimal
 import pytest
 from django.db import IntegrityError
 
-from core.models import Category, Client, Item
-from core.tests.factories import CategoryFactory, ClientFactory, ItemFactory
+from core.models import Category, Item, Neighbour
+from core.tests.factories import CategoryFactory, ItemFactory, NeighbourFactory
 
 
 @pytest.mark.django_db
@@ -52,19 +52,19 @@ class TestItem:
 
 
 @pytest.mark.django_db
-class TestClient:
-    def test_create_client(self):
-        client = ClientFactory(name="Maria", card_id="RFID-123")
-        client.refresh_from_db()
-        assert client.name == "Maria"
-        assert client.card_id == "RFID-123"
-        assert client.balance == Decimal("100.00")
+class TestNeighbour:
+    def test_create_neighbour(self):
+        neighbour = NeighbourFactory(name="Maria", card_id="RFID-123")
+        neighbour.refresh_from_db()
+        assert neighbour.name == "Maria"
+        assert neighbour.card_id == "RFID-123"
+        assert neighbour.balance == Decimal("100.00")
 
     def test_unique_card_id(self):
-        ClientFactory(card_id="CARD-001")
+        NeighbourFactory(card_id="CARD-001")
         with pytest.raises(IntegrityError):
-            ClientFactory(card_id="CARD-001")
+            NeighbourFactory(card_id="CARD-001")
 
     def test_default_balance(self):
-        client = Client.objects.create(name="New Client", card_id="NEW-001")
-        assert client.balance == 0
+        neighbour = Neighbour.objects.create(name="New Neighbour", card_id="NEW-001")
+        assert neighbour.balance == 0

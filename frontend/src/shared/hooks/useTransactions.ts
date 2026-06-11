@@ -5,7 +5,7 @@ import type { TransactionListItem } from '@/shared/api/types';
 interface UseTransactionsParams {
   dateFrom?: string;
   dateTo?: string;
-  client?: number;
+  neighbour?: number;
   today?: boolean;
 }
 
@@ -18,7 +18,7 @@ export function useTransactions(params?: UseTransactionsParams) {
     const query = new URLSearchParams();
     if (params?.dateFrom) query.set('date_from', params.dateFrom);
     if (params?.dateTo) query.set('date_to', params.dateTo);
-    if (params?.client) query.set('client', String(params.client));
+    if (params?.neighbour) query.set('neighbour', String(params.neighbour));
     if (params?.today) query.set('today', 'true');
 
     const queryString = query.toString();
@@ -31,7 +31,7 @@ export function useTransactions(params?: UseTransactionsParams) {
       .then(setTransactions)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [params?.dateFrom, params?.dateTo, params?.client, params?.today]);
+  }, [params?.dateFrom, params?.dateTo, params?.neighbour, params?.today]);
 
   useEffect(() => {
     fetchTransactions();

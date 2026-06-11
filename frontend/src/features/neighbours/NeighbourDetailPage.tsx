@@ -6,11 +6,11 @@ import { Button } from '@/shared/components/Button';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { AddBalanceModal } from './AddBalanceModal';
-import type { Client, TransactionListItem } from '@/shared/api/types';
+import type { Neighbour, TransactionListItem } from '@/shared/api/types';
 
-export function ClientDetailPage() {
+export function NeighbourDetailPage() {
   const { id } = useParams();
-  const [client, setClient] = useState<Client | null>(null);
+  const [neighbour, setNeighbour] = useState<Neighbour | null>(null);
   const [transactions, setTransactions] = useState<TransactionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showBalance, setShowBalance] = useState(false);
@@ -18,11 +18,11 @@ export function ClientDetailPage() {
   const fetchData = () => {
     setLoading(true);
     Promise.all([
-      api.get<Client>(`/api/clients/${id}/`),
-      api.get<TransactionListItem[]>(`/api/transactions/?client=${id}`),
+      api.get<Neighbour>(`/api/neighbours/${id}/`),
+      api.get<TransactionListItem[]>(`/api/transactions/?neighbour=${id}`),
     ])
-      .then(([c, txs]) => {
-        setClient(c);
+      .then(([n, txs]) => {
+        setNeighbour(n);
         setTransactions(txs);
       })
       .finally(() => setLoading(false));
@@ -32,7 +32,7 @@ export function ClientDetailPage() {
     fetchData();
   }, [id]);
 
-  if (loading || !client) {
+  if (loading || !neighbour) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
@@ -43,14 +43,14 @@ export function ClientDetailPage() {
   return (
     <div>
       <PageHeader
-        title={`Client: ${client.name}`}
+        title={`Neighbour: ${neighbour.name}`}
         actions={
           <>
             <Button variant="secondary" onClick={() => setShowBalance(true)} data-testid="add-balance-button">
               Add Balance
             </Button>
-            <Link to={`/clients/${id}/edit`}>
-              <Button variant="secondary" data-testid="edit-client-button">Edit</Button>
+            <Link to={`/neighbours/${id}/edit`}>
+              <Button variant="secondary" data-testid="edit-neighbour-button">Edit</Button>
             </Link>
           </>
         }
@@ -60,30 +60,30 @@ export function ClientDetailPage() {
         <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <dt className="text-sm text-gray-500">Name</dt>
-            <dd className="text-lg font-medium text-gray-900">{client.name}</dd>
+            <dd className="text-lg font-medium text-gray-900">{neighbour.name}</dd>
           </div>
           <div>
             <dt className="text-sm text-gray-500">Card ID</dt>
-            <dd className="text-lg font-mono text-gray-900">{client.card_id}</dd>
+            <dd className="text-lg font-mono text-gray-900">{neighbour.card_id}</dd>
           </div>
           <div>
             <dt className="text-sm text-gray-500">Balance</dt>
             <dd className="text-lg font-bold text-green-700">
-              <CurrencyDisplay amount={client.balance} />
+              <CurrencyDisplay amount={neighbour.balance} />
             </dd>
           </div>
         </dl>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <h3 className="text-md font-semibold text-gray-900 mb-3">Client Information</h3>
+        <h3 className="text-md font-semibold text-gray-900 mb-3">Neighbour Information</h3>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <dt className="text-sm text-gray-500">Allergies / Dietary Restrictions</dt>
             <dd className="text-sm text-gray-900 mt-1">
-              {client.allergies.length > 0 ? (
+              {neighbour.allergies.length > 0 ? (
                 <div className="flex flex-wrap gap-1">
-                  {client.allergies.map((a) => (
+                  {neighbour.allergies.map((a) => (
                     <span key={a} className="inline-block px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-800">
                       {a}
                     </span>
@@ -97,13 +97,13 @@ export function ClientDetailPage() {
           <div>
             <dt className="text-sm text-gray-500">Diaper Size</dt>
             <dd className="text-sm text-gray-900 mt-1">
-              {client.diaper_size || <span className="text-gray-400">N/A</span>}
+              {neighbour.diaper_size || <span className="text-gray-400">N/A</span>}
             </dd>
           </div>
           <div>
             <dt className="text-sm text-gray-500">Catchment Area</dt>
             <dd className="text-sm text-gray-900 mt-1">
-              {client.catchment_area ? (
+              {neighbour.catchment_area ? (
                 <span className="text-green-700">In area</span>
               ) : (
                 <span className="text-red-600">Out of area</span>
@@ -113,7 +113,7 @@ export function ClientDetailPage() {
           <div className="sm:col-span-2">
             <dt className="text-sm text-gray-500">Notes</dt>
             <dd className="text-sm text-gray-900 mt-1 whitespace-pre-wrap">
-              {client.notes || <span className="text-gray-400">No notes</span>}
+              {neighbour.notes || <span className="text-gray-400">No notes</span>}
             </dd>
           </div>
         </dl>
@@ -121,7 +121,7 @@ export function ClientDetailPage() {
 
       <h2 className="text-lg font-semibold text-gray-900 mb-3">Recent Transactions</h2>
       {transactions.length === 0 ? (
-        <p className="text-gray-500 text-sm">No transactions for this client.</p>
+        <p className="text-gray-500 text-sm">No transactions for this neighbour.</p>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
@@ -155,8 +155,8 @@ export function ClientDetailPage() {
 
       {showBalance && (
         <AddBalanceModal
-          clientId={client.id}
-          clientName={client.name}
+          neighbourId={neighbour.id}
+          neighbourName={neighbour.name}
           onClose={() => setShowBalance(false)}
           onSuccess={() => {
             setShowBalance(false);

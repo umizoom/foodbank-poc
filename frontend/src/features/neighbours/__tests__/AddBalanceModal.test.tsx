@@ -5,8 +5,8 @@ import { AddBalanceModal } from '../AddBalanceModal';
 
 function renderModal(props = {}) {
   const defaultProps = {
-    clientId: 1,
-    clientName: 'Maria Garcia',
+    neighbourId: 1,
+    neighbourName: 'Maria Garcia',
     onClose: vi.fn(),
     onSuccess: vi.fn(),
     ...props,
@@ -19,7 +19,7 @@ function renderModal(props = {}) {
 }
 
 describe('AddBalanceModal', () => {
-  it('renders modal with client name', () => {
+  it('renders modal with neighbour name', () => {
     renderModal();
     expect(screen.getByRole('heading', { name: 'Add Balance' })).toBeInTheDocument();
     expect(screen.getByText('Adding to: Maria Garcia')).toBeInTheDocument();

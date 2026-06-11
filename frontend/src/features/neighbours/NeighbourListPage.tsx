@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useClients } from '@/shared/hooks/useClients';
+import { useNeighbours } from '@/shared/hooks/useNeighbours';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { DataTable, type Column } from '@/shared/components/DataTable';
 import { SearchInput } from '@/shared/components/SearchInput';
 import { Button } from '@/shared/components/Button';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
-import type { Client } from '@/shared/api/types';
+import type { Neighbour } from '@/shared/api/types';
 
-export function ClientListPage() {
+export function NeighbourListPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const { clients, loading } = useClients({ search });
+  const { neighbours, loading } = useNeighbours({ search });
 
-  const columns: Column<Client>[] = [
+  const columns: Column<Neighbour>[] = [
     { key: 'name', header: 'Name', render: (c) => <span className="font-medium text-gray-900">{c.name}</span> },
     { key: 'card_id', header: 'Card ID', render: (c) => <span className="font-mono text-gray-600">{c.card_id}</span> },
     { key: 'balance', header: 'Balance', render: (c) => <CurrencyDisplay amount={c.balance} /> },
@@ -23,16 +23,16 @@ export function ClientListPage() {
       render: (c) => (
         <div className="flex gap-2">
           <button
-            onClick={() => navigate(`/clients/${c.id}`)}
+            onClick={() => navigate(`/neighbours/${c.id}`)}
             className="text-blue-600 hover:underline text-sm"
-            data-testid={`view-client-${c.id}`}
+            data-testid={`view-neighbour-${c.id}`}
           >
             View
           </button>
           <button
-            onClick={() => navigate(`/clients/${c.id}/edit`)}
+            onClick={() => navigate(`/neighbours/${c.id}/edit`)}
             className="text-blue-600 hover:underline text-sm"
-            data-testid={`edit-client-${c.id}`}
+            data-testid={`edit-neighbour-${c.id}`}
           >
             Edit
           </button>
@@ -44,10 +44,10 @@ export function ClientListPage() {
   return (
     <div>
       <PageHeader
-        title="Clients"
+        title="Neighbours"
         actions={
-          <Link to="/clients/new">
-            <Button data-testid="register-client-button">Register Client</Button>
+          <Link to="/neighbours/new">
+            <Button data-testid="register-neighbour-button">Register Neighbour</Button>
           </Link>
         }
       />
@@ -58,9 +58,9 @@ export function ClientListPage() {
 
       <DataTable
         columns={columns}
-        data={clients}
+        data={neighbours}
         loading={loading}
-        emptyMessage="No clients registered. Register a new client."
+        emptyMessage="No neighbours registered. Register a new neighbour."
         keyExtractor={(c) => c.id}
       />
     </div>

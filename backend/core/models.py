@@ -48,7 +48,7 @@ class Item(models.Model):
         return self.stock_count <= self.low_stock_threshold
 
 
-class Client(models.Model):
+class Neighbour(models.Model):
     name = models.CharField(max_length=200)
     card_id = models.CharField(max_length=100, unique=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -63,7 +63,7 @@ class Client(models.Model):
         ordering = ["name"]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(balance__gte=0), name="client_balance_non_negative"
+                check=models.Q(balance__gte=0), name="neighbour_balance_non_negative"
             ),
         ]
 
@@ -72,8 +72,8 @@ class Client(models.Model):
 
 
 class BalanceLog(models.Model):
-    client = models.ForeignKey(
-        Client, on_delete=models.CASCADE, related_name="balance_logs"
+    neighbour = models.ForeignKey(
+        Neighbour, on_delete=models.CASCADE, related_name="balance_logs"
     )
     admin = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="balance_logs"
@@ -87,12 +87,12 @@ class BalanceLog(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.client.name}: +${self.amount}"
+        return f"{self.neighbour.name}: +${self.amount}"
 
 
 class Cart(models.Model):
-    client = models.ForeignKey(
-        Client, on_delete=models.CASCADE, related_name="carts"
+    neighbour = models.ForeignKey(
+        Neighbour, on_delete=models.CASCADE, related_name="carts"
     )
     admin = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="carts"
@@ -100,7 +100,7 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Cart for {self.client.name}"
+        return f"Cart for {self.neighbour.name}"
 
 
 class CartItem(models.Model):
@@ -127,8 +127,8 @@ class CartItem(models.Model):
 
 
 class Transaction(models.Model):
-    client = models.ForeignKey(
-        Client, on_delete=models.PROTECT, related_name="transactions"
+    neighbour = models.ForeignKey(
+        Neighbour, on_delete=models.PROTECT, related_name="transactions"
     )
     admin = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="transactions"
@@ -140,7 +140,7 @@ class Transaction(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"Transaction #{self.id} - {self.client.name}"
+        return f"Transaction #{self.id} - {self.neighbour.name}"
 
 
 class TransactionItem(models.Model):

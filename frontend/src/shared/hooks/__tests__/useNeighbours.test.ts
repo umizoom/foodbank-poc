@@ -1,9 +1,9 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useClients } from '../useClients';
+import { useNeighbours } from '../useNeighbours';
 
-describe('useClients', () => {
-  it('fetches clients on mount', async () => {
-    const { result } = renderHook(() => useClients());
+describe('useNeighbours', () => {
+  it('fetches neighbours on mount', async () => {
+    const { result } = renderHook(() => useNeighbours());
 
     expect(result.current.loading).toBe(true);
 
@@ -11,13 +11,13 @@ describe('useClients', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(result.current.clients).toHaveLength(2);
-    expect(result.current.clients[0].name).toBe('Maria Garcia');
+    expect(result.current.neighbours).toHaveLength(2);
+    expect(result.current.neighbours[0].name).toBe('Maria Garcia');
     expect(result.current.error).toBeNull();
   });
 
   it('exposes refetch function', async () => {
-    const { result } = renderHook(() => useClients());
+    const { result } = renderHook(() => useNeighbours());
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
