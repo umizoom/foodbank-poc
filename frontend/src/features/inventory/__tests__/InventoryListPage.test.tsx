@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/render';
 import { InventoryListPage } from '../InventoryListPage';
 
@@ -40,5 +41,29 @@ describe('InventoryListPage', () => {
   it('renders category filter', () => {
     renderWithProviders(<InventoryListPage />);
     expect(screen.getByTestId('category-filter')).toBeInTheDocument();
+  });
+
+  it('shows low stock filter chip when lowStock param is in URL', async () => {
+    renderWithProviders(<InventoryListPage />, { route: '/inventory?lowStock=true' });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('clear-low-stock-filter')).toBeInTheDocument();
+      expect(screen.getByText('Low Stock Only')).toBeInTheDocument();
+    });
+  });
+
+  it('clears low stock filter when clear button is clicked', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<InventoryListPage />, { route: '/inventory?lowStock=true' });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('clear-low-stock-filter')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('clear-low-stock-filter'));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('clear-low-stock-filter')).not.toBeInTheDocument();
+    });
   });
 });

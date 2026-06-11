@@ -53,10 +53,10 @@ export function DashboardPage() {
       <PageHeader title="Dashboard" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total Items" value={stats?.totalItems ?? 0} />
-        <StatCard label="Low Stock Items" value={stats?.lowStockItems ?? 0} variant="warning" />
-        <StatCard label="Total Neighbours" value={stats?.totalNeighbours ?? 0} />
-        <StatCard label="Today's Transactions" value={stats?.todayTransactions ?? 0} />
+        <StatCard label="Total Items" value={stats?.totalItems ?? 0} to="/inventory" />
+        <StatCard label="Low Stock Items" value={stats?.lowStockItems ?? 0} variant="warning" to="/inventory?lowStock=true" />
+        <StatCard label="Total Neighbours" value={stats?.totalNeighbours ?? 0} to="/neighbours" />
+        <StatCard label="Today's Transactions" value={stats?.todayTransactions ?? 0} to="/transactions?today=true" />
       </div>
 
       <div>
@@ -104,17 +104,23 @@ function StatCard({
   label,
   value,
   variant,
+  to,
 }: {
   label: string;
   value: number;
   variant?: 'warning';
+  to: string;
 }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6" data-testid={`stat-${label.toLowerCase().replace(/\s+/g, '-')}`}>
+    <Link
+      to={to}
+      className="block bg-white rounded-lg shadow-sm p-6 hover:shadow-md hover:ring-2 hover:ring-blue-200 transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+      data-testid={`stat-${label.toLowerCase().replace(/\s+/g, '-')}`}
+    >
       <p className="text-sm text-gray-500 mb-1">{label}</p>
       <p className={`text-3xl font-bold ${variant === 'warning' && value > 0 ? 'text-yellow-600' : 'text-gray-900'}`}>
         {value}
       </p>
-    </div>
+    </Link>
   );
 }

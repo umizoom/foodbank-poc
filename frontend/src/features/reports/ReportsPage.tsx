@@ -29,6 +29,10 @@ export function ReportsPage() {
     setActivePreset(preset);
   };
 
+  const dateError = startDate && endDate && startDate > endDate
+    ? '"From" date must be before "To" date'
+    : '';
+
   const handleDateChange = (field: 'start' | 'end', value: string) => {
     if (field === 'start') setStartDate(value);
     else setEndDate(value);
@@ -111,8 +115,10 @@ export function ReportsPage() {
             <input
               type="date"
               value={startDate}
+              max={endDate || undefined}
               onChange={(e) => handleDateChange('start', e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2 text-base"
+              onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch {} }}
+              className="rounded-md border border-gray-300 px-3 py-2 text-base min-h-[44px]"
               data-testid="filter-date-from"
             />
           </div>
@@ -121,15 +127,17 @@ export function ReportsPage() {
             <input
               type="date"
               value={endDate}
+              min={startDate || undefined}
               onChange={(e) => handleDateChange('end', e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2 text-base"
+              onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch {} }}
+              className="rounded-md border border-gray-300 px-3 py-2 text-base min-h-[44px]"
               data-testid="filter-date-to"
             />
           </div>
 
           <Button
             onClick={handleRunReport}
-            disabled={!startDate || !endDate || loading}
+            disabled={!startDate || !endDate || !!dateError || loading}
             data-testid="run-report-btn"
           >
             {loading ? 'Running...' : 'Run Report'}
@@ -144,6 +152,12 @@ export function ReportsPage() {
             Export CSV
           </Button>
         </div>
+
+        {dateError && (
+          <p className="mb-4 text-sm text-red-600" role="alert" data-testid="date-error">
+            {dateError}
+          </p>
+        )}
 
         {report && (
           <>
