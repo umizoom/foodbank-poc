@@ -174,9 +174,17 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.request.query_params.get("today") == "true":
+        params = self.request.query_params
+        if params.get("today") == "true":
             from django.utils import timezone
             qs = qs.filter(created_at__date=timezone.localdate())
+        else:
+            date_from = params.get("date_from")
+            date_to = params.get("date_to")
+            if date_from:
+                qs = qs.filter(created_at__date__gte=date_from)
+            if date_to:
+                qs = qs.filter(created_at__date__lte=date_to)
         return qs
 
     def get_serializer_class(self):

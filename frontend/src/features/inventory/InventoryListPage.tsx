@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useItems } from '@/shared/hooks/useItems';
 import { useCategories } from '@/shared/hooks/useCategories';
 import { PageHeader } from '@/shared/components/PageHeader';
@@ -17,10 +17,12 @@ import type { Item } from '@/shared/api/types';
 
 export function InventoryListPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { addToast } = useNotification();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<number | undefined>();
-  const { items, loading, refetch } = useItems({ search, category: categoryFilter });
+  const lowStockFilter = searchParams.get('lowStock') === 'true';
+  const { items, loading, refetch } = useItems({ search, category: categoryFilter, lowStock: lowStockFilter || undefined });
   const { categories } = useCategories();
 
   const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
@@ -114,6 +116,25 @@ export function InventoryListPage() {
           onChange={setCategoryFilter}
         />
       </div>
+
+      {lowStockFilter && (
+        <div className="mb-4 flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 text-yellow-800 px-3 py-1 text-sm font-medium">
+            Low Stock Only
+            <button
+              onClick={() => {
+                searchParams.delete('lowStock');
+                setSearchParams(searchParams);
+              }}
+              className="ml-1 text-yellow-600 hover:text-yellow-900"
+              aria-label="Clear low stock filter"
+              data-testid="clear-low-stock-filter"
+            >
+              &times;
+            </button>
+          </span>
+        </div>
+      )}
 
       <DataTable
         columns={columns}
