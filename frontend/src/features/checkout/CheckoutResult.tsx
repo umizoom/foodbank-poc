@@ -16,7 +16,7 @@ export function CheckoutResult({ transaction, onNewCheckout }: CheckoutResultPro
 
         {transaction && (
           <div className="text-sm text-gray-600 mb-6 space-y-1">
-            <p>Client: <strong>{transaction.client_name}</strong></p>
+            <p>Neighbour: <strong>{transaction.neighbour_name}</strong></p>
             <p>
               Total: <strong><CurrencyDisplay amount={transaction.total_amount} /></strong>
             </p>

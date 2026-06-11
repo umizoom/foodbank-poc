@@ -11,13 +11,13 @@ import type { Cart, Transaction } from '@/shared/api/types';
 
 interface CartPanelProps {
   cart: Cart;
-  clientBalance: string;
+  neighbourBalance: string;
   onCartUpdate: () => void;
   onCheckoutSuccess: (tx: Transaction) => void;
   onCancel: () => void;
 }
 
-export function CartPanel({ cart, clientBalance, onCartUpdate, onCheckoutSuccess, onCancel }: CartPanelProps) {
+export function CartPanel({ cart, neighbourBalance, onCartUpdate, onCheckoutSuccess, onCancel }: CartPanelProps) {
   const { addToast } = useNotification();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -68,7 +68,7 @@ export function CartPanel({ cart, clientBalance, onCartUpdate, onCheckoutSuccess
             ))}
           </div>
 
-          <CartSummary cartTotal={cart.total} clientBalance={clientBalance} />
+          <CartSummary cartTotal={cart.total} neighbourBalance={neighbourBalance} />
 
           <div className="p-4 border-t border-gray-200 flex gap-3">
             <Button
@@ -92,7 +92,7 @@ export function CartPanel({ cart, clientBalance, onCartUpdate, onCheckoutSuccess
       <ConfirmModal
         open={showConfirm}
         title="Confirm Checkout"
-        message={`Complete checkout for ${cart.client_name}? Total: $${cart.total}`}
+        message={`Complete checkout for ${cart.neighbour_name}? Total: $${cart.total}`}
         confirmLabel="Complete Checkout"
         loading={checkoutLoading}
         onConfirm={handleCheckout}

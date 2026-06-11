@@ -11,13 +11,13 @@ from core.exceptions import (
     InsufficientStockError,
 )
 from core.models import Transaction
-from core.services import checkout_service, client_service, inventory_service, report_service
+from core.services import checkout_service, inventory_service, neighbour_service, report_service
 from core.tests.factories import (
     CartFactory,
     CartItemFactory,
     CategoryFactory,
-    ClientFactory,
     ItemFactory,
+    NeighbourFactory,
     TransactionFactory,
     TransactionItemFactory,
     UserFactory,
@@ -68,48 +68,48 @@ class TestInventoryService:
 
 
 @pytest.mark.django_db
-class TestClientService:
-    def test_register_client(self):
-        client = client_service.register_client(name="John", card_id="CARD-999")
-        assert client.name == "John"
-        assert client.balance == 0
+class TestNeighbourService:
+    def test_register_neighbour(self):
+        neighbour = neighbour_service.register_neighbour(name="John", card_id="CARD-999")
+        assert neighbour.name == "John"
+        assert neighbour.balance == 0
 
     def test_get_by_card_id_found(self):
-        ClientFactory(card_id="RFID-ABC")
-        client = client_service.get_by_card_id("RFID-ABC")
-        assert client is not None
-        assert client.card_id == "RFID-ABC"
+        NeighbourFactory(card_id="RFID-ABC")
+        neighbour = neighbour_service.get_by_card_id("RFID-ABC")
+        assert neighbour is not None
+        assert neighbour.card_id == "RFID-ABC"
 
     def test_get_by_card_id_not_found(self):
-        result = client_service.get_by_card_id("NONEXISTENT")
+        result = neighbour_service.get_by_card_id("NONEXISTENT")
         assert result is None
 
     def test_add_balance(self):
-        client = ClientFactory(balance="50.00")
+        neighbour = NeighbourFactory(balance="50.00")
         admin = UserFactory()
-        updated = client_service.add_balance(client.id, Decimal("25.00"), admin)
+        updated = neighbour_service.add_balance(neighbour.id, Decimal("25.00"), admin)
         assert updated.balance == Decimal("75.00")
 
     def test_add_balance_exceeds_max(self):
-        client = ClientFactory()
+        neighbour = NeighbourFactory()
         admin = UserFactory()
         with pytest.raises(ValueError, match="cannot exceed"):
-            client_service.add_balance(client.id, Decimal("2500.00"), admin)
+            neighbour_service.add_balance(neighbour.id, Decimal("2500.00"), admin)
 
     def test_add_balance_zero(self):
-        client = ClientFactory()
+        neighbour = NeighbourFactory()
         admin = UserFactory()
         with pytest.raises(ValueError, match="must be positive"):
-            client_service.add_balance(client.id, Decimal("0"), admin)
+            neighbour_service.add_balance(neighbour.id, Decimal("0"), admin)
 
 
 @pytest.mark.django_db
 class TestCheckoutService:
     def test_create_cart(self):
-        client = ClientFactory()
+        neighbour = NeighbourFactory()
         admin = UserFactory()
-        cart = checkout_service.create_cart(client.id, admin)
-        assert cart.client == client
+        cart = checkout_service.create_cart(neighbour.id, admin)
+        assert cart.neighbour == neighbour
         assert cart.admin == admin
 
     def test_add_to_cart(self):
@@ -140,37 +140,37 @@ class TestCheckoutService:
         assert len(summary["items"]) == 0
 
     def test_process_checkout_success(self):
-        client = ClientFactory(balance="100.00")
+        neighbour = NeighbourFactory(balance="100.00")
         admin = UserFactory()
-        cart = CartFactory(client=client, admin=admin)
+        cart = CartFactory(neighbour=neighbour, admin=admin)
         item = ItemFactory(cost="10.00", stock_count=20)
         CartItemFactory(cart=cart, item=item, quantity=3)
 
         txn = checkout_service.process_checkout(cart.id)
 
         assert txn.total == Decimal("30.00")
-        client.refresh_from_db()
-        assert client.balance == Decimal("70.00")
+        neighbour.refresh_from_db()
+        assert neighbour.balance == Decimal("70.00")
         item.refresh_from_db()
         assert item.stock_count == 17
 
     def test_process_checkout_insufficient_balance(self):
-        client = ClientFactory(balance="10.00")
+        neighbour = NeighbourFactory(balance="10.00")
         admin = UserFactory()
-        cart = CartFactory(client=client, admin=admin)
+        cart = CartFactory(neighbour=neighbour, admin=admin)
         item = ItemFactory(cost="20.00", stock_count=10)
         CartItemFactory(cart=cart, item=item, quantity=1)
 
         with pytest.raises(InsufficientBalanceError):
             checkout_service.process_checkout(cart.id)
 
-        client.refresh_from_db()
-        assert client.balance == Decimal("10.00")
+        neighbour.refresh_from_db()
+        assert neighbour.balance == Decimal("10.00")
 
     def test_process_checkout_insufficient_stock(self):
-        client = ClientFactory(balance="100.00")
+        neighbour = NeighbourFactory(balance="100.00")
         admin = UserFactory()
-        cart = CartFactory(client=client, admin=admin)
+        cart = CartFactory(neighbour=neighbour, admin=admin)
         item = ItemFactory(cost="5.00", stock_count=2)
         CartItemFactory(cart=cart, item=item, quantity=5)
 

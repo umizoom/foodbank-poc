@@ -33,7 +33,7 @@ describe('CheckoutPage', () => {
     await user.click(screen.getByTestId('simulate-card-button'));
 
     await waitFor(() => {
-      expect(screen.getByText('No client found with this card ID')).toBeInTheDocument();
+      expect(screen.getByText('No neighbour found with this card ID')).toBeInTheDocument();
     });
   });
 
@@ -49,7 +49,7 @@ describe('CheckoutPage', () => {
     await user.click(screen.getByTestId('simulate-card-button'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('client-banner')).toBeInTheDocument();
+      expect(screen.getByTestId('neighbour-banner')).toBeInTheDocument();
       expect(screen.getByText('Maria Garcia')).toBeInTheDocument();
     });
   });

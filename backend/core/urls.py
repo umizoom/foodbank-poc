@@ -4,11 +4,11 @@ from rest_framework.routers import DefaultRouter
 from core.views import (
     CartViewSet,
     CategoryViewSet,
-    ClientViewSet,
     ItemViewSet,
     ItemsSoldReportView,
     LoginView,
     LogoutView,
+    NeighbourViewSet,
     SessionView,
     TransactionViewSet,
     health_check,
@@ -17,7 +17,7 @@ from core.views import (
 router = DefaultRouter()
 router.register(r"categories", CategoryViewSet)
 router.register(r"items", ItemViewSet)
-router.register(r"clients", ClientViewSet)
+router.register(r"neighbours", NeighbourViewSet)
 router.register(r"carts", CartViewSet)
 router.register(r"transactions", TransactionViewSet)
 

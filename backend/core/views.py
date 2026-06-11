@@ -10,7 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.models import Cart, Category, Client, Item, Transaction
+from core.models import Cart, Category, Item, Neighbour, Transaction
 from core.serializers import (
     BalanceAddSerializer,
     CartCreateSerializer,
@@ -18,14 +18,14 @@ from core.serializers import (
     CartItemUpdateSerializer,
     CartSerializer,
     CategorySerializer,
-    ClientSerializer,
     ItemSerializer,
     LoginSerializer,
+    NeighbourSerializer,
     StockUpdateSerializer,
     TransactionListSerializer,
     TransactionSerializer,
 )
-from core.services import auth_service, checkout_service, client_service, inventory_service, report_service
+from core.services import auth_service, checkout_service, inventory_service, neighbour_service, report_service
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -66,9 +66,9 @@ class ItemViewSet(viewsets.ModelViewSet):
         return Response(ItemSerializer(updated_item).data)
 
 
-class ClientViewSet(viewsets.ModelViewSet):
-    queryset = Client.objects.all()
-    serializer_class = ClientSerializer
+class NeighbourViewSet(viewsets.ModelViewSet):
+    queryset = Neighbour.objects.all()
+    serializer_class = NeighbourSerializer
     search_fields = ["name", "card_id"]
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
     pagination_class = None
@@ -81,25 +81,25 @@ class ClientViewSet(viewsets.ModelViewSet):
                 {"error": "card_id parameter is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        client = client_service.get_by_card_id(card_id)
-        if client is None:
+        neighbour = neighbour_service.get_by_card_id(card_id)
+        if neighbour is None:
             return Response(
                 {"error": "Card not registered"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        return Response(ClientSerializer(client).data)
+        return Response(NeighbourSerializer(neighbour).data)
 
     @action(detail=True, methods=["post"], url_path="balance")
     def add_balance(self, request, pk=None):
-        client = self.get_object()
+        neighbour = self.get_object()
         serializer = BalanceAddSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        updated_client = client_service.add_balance(
-            client_id=client.id,
+        updated_neighbour = neighbour_service.add_balance(
+            neighbour_id=neighbour.id,
             amount=serializer.validated_data["amount"],
             admin=request.user,
         )
-        return Response(ClientSerializer(updated_client).data)
+        return Response(NeighbourSerializer(updated_neighbour).data)
 
 
 class CartViewSet(viewsets.GenericViewSet):
@@ -110,7 +110,7 @@ class CartViewSet(viewsets.GenericViewSet):
         serializer = CartCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         cart = checkout_service.create_cart(
-            client_id=serializer.validated_data["client_id"],
+            neighbour_id=serializer.validated_data["neighbour_id"],
             admin=request.user,
         )
         return Response(
@@ -164,10 +164,10 @@ class CartViewSet(viewsets.GenericViewSet):
 
 
 class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Transaction.objects.select_related("client", "admin").prefetch_related(
+    queryset = Transaction.objects.select_related("neighbour", "admin").prefetch_related(
         "items"
     )
-    filterset_fields = ["client"]
+    filterset_fields = ["neighbour"]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     ordering_fields = ["created_at", "total"]
     pagination_class = None

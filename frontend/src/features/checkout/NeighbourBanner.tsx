@@ -1,31 +1,31 @@
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
-import type { Client, Cart } from '@/shared/api/types';
+import type { Neighbour, Cart } from '@/shared/api/types';
 
-interface ClientBannerProps {
-  client: Client;
+interface NeighbourBannerProps {
+  neighbour: Neighbour;
   cart: Cart;
 }
 
-export function ClientBanner({ client, cart }: ClientBannerProps) {
-  const balance = parseFloat(client.balance);
+export function NeighbourBanner({ neighbour, cart }: NeighbourBannerProps) {
+  const balance = parseFloat(neighbour.balance);
   const cartTotal = parseFloat(cart.total);
   const remaining = balance - cartTotal;
   const isOverBudget = remaining < 0;
-  const hasClientInfo = client.allergies.length > 0 || client.diaper_size || !client.catchment_area;
-  const hasNotes = client.notes && client.notes.trim().length > 0;
+  const hasNeighbourInfo = neighbour.allergies.length > 0 || neighbour.diaper_size || !neighbour.catchment_area;
+  const hasNotes = neighbour.notes && neighbour.notes.trim().length > 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm" data-testid="client-banner">
+    <div className="bg-white rounded-lg shadow-sm" data-testid="neighbour-banner">
       <div className="p-4 flex items-center justify-between">
         <div>
-          <span className="text-sm text-gray-500">Client:</span>
-          <span className="ml-2 font-semibold text-gray-900">{client.name}</span>
+          <span className="text-sm text-gray-500">Neighbour:</span>
+          <span className="ml-2 font-semibold text-gray-900">{neighbour.name}</span>
         </div>
         <div className="flex items-center gap-6">
           <div>
             <span className="text-sm text-gray-500">Balance:</span>
             <span className="ml-1 font-medium">
-              <CurrencyDisplay amount={client.balance} />
+              <CurrencyDisplay amount={neighbour.balance} />
             </span>
           </div>
           <div>
@@ -42,25 +42,25 @@ export function ClientBanner({ client, cart }: ClientBannerProps) {
           </div>
         </div>
       </div>
-      {hasClientInfo && (
+      {hasNeighbourInfo && (
         <div className="px-4 pb-3 border-t border-gray-100 pt-2 flex items-center gap-4 flex-wrap text-sm">
-          {client.allergies.length > 0 && (
+          {neighbour.allergies.length > 0 && (
             <div className="flex items-center gap-1">
               <span className="text-amber-600 font-medium">Allergies:</span>
-              {client.allergies.map((a) => (
+              {neighbour.allergies.map((a) => (
                 <span key={a} className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs">
                   {a}
                 </span>
               ))}
             </div>
           )}
-          {client.diaper_size && (
+          {neighbour.diaper_size && (
             <div className="flex items-center gap-1">
               <span className="text-gray-500">Diaper Size:</span>
-              <span className="font-medium">{client.diaper_size}</span>
+              <span className="font-medium">{neighbour.diaper_size}</span>
             </div>
           )}
-          {!client.catchment_area && (
+          {!neighbour.catchment_area && (
             <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-medium">
               Out of catchment area
             </span>
@@ -76,8 +76,8 @@ export function ClientBanner({ client, cart }: ClientBannerProps) {
               <line x1="16" y1="13" x2="8" y2="13" />
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
-            <p className="text-sm text-blue-900 whitespace-pre-wrap max-h-20 overflow-y-auto" data-testid="client-notes">
-              {client.notes}
+            <p className="text-sm text-blue-900 whitespace-pre-wrap max-h-20 overflow-y-auto" data-testid="neighbour-notes">
+              {neighbour.notes}
             </p>
           </div>
         </div>

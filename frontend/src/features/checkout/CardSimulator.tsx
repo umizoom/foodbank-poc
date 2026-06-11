@@ -5,17 +5,17 @@ import { FormField } from '@/shared/components/FormField';
 import { Button } from '@/shared/components/Button';
 import { AlertBanner } from '@/shared/components/AlertBanner';
 import { ApiError, UnauthorizedError } from '@/shared/api/errors';
-import type { Client, Cart } from '@/shared/api/types';
+import type { Neighbour, Cart } from '@/shared/api/types';
 
 interface CardSimulatorProps {
-  onClientIdentified: (client: Client, cart: Cart) => void;
+  onNeighbourIdentified: (neighbour: Neighbour, cart: Cart) => void;
 }
 
 interface CardFormData {
   card_id: string;
 }
 
-export function CardSimulator({ onClientIdentified }: CardSimulatorProps) {
+export function CardSimulator({ onNeighbourIdentified }: CardSimulatorProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,18 +25,18 @@ export function CardSimulator({ onClientIdentified }: CardSimulatorProps) {
     setLoading(true);
     setError(null);
     try {
-      const client = await api.get<Client>(`/api/clients/lookup/?card_id=${encodeURIComponent(data.card_id)}`);
-      const cart = await api.post<Cart>('/api/carts/', { client_id: client.id });
-      onClientIdentified(client, cart);
+      const neighbour = await api.get<Neighbour>(`/api/neighbours/lookup/?card_id=${encodeURIComponent(data.card_id)}`);
+      const cart = await api.post<Cart>('/api/carts/', { neighbour_id: neighbour.id });
+      onNeighbourIdentified(neighbour, cart);
     } catch (e) {
       if (e instanceof UnauthorizedError) {
         setError('Session expired. Please log in again.');
       } else if (e instanceof ApiError && e.status === 403) {
         setError('Session expired. Please log in again.');
       } else if (e instanceof ApiError && e.status === 404) {
-        setError('No client found with this card ID');
+        setError('No neighbour found with this card ID');
       } else {
-        setError('Failed to identify client');
+        setError('Failed to identify neighbour');
       }
     } finally {
       setLoading(false);
@@ -47,7 +47,7 @@ export function CardSimulator({ onClientIdentified }: CardSimulatorProps) {
     <div className="max-w-md mx-auto mt-12">
       <div className="bg-white rounded-lg shadow-sm p-8 text-center">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Simulate Card Tap</h2>
-        <p className="text-sm text-gray-500 mb-6">Enter the client's card ID to begin checkout</p>
+        <p className="text-sm text-gray-500 mb-6">Enter the neighbour's card ID to begin checkout</p>
 
         {error && <AlertBanner type="error" message={error} onDismiss={() => setError(null)} />}
 

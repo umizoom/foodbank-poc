@@ -7,7 +7,7 @@ import type { Item } from '@/shared/api/types';
 const navItems = [
   { to: '/', label: 'Dashboard', end: true },
   { to: '/inventory', label: 'Inventory', showBadge: true },
-  { to: '/clients', label: 'Clients' },
+  { to: '/neighbours', label: 'Neighbours' },
   { to: '/checkout', label: 'Checkout' },
   { to: '/transactions', label: 'Transactions' },
   { to: '/reports', label: 'Reports' },

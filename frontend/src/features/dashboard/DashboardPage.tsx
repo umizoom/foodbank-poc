@@ -4,12 +4,12 @@ import { api } from '@/shared/api/client';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
-import type { Item, Client, TransactionListItem } from '@/shared/api/types';
+import type { Item, Neighbour, TransactionListItem } from '@/shared/api/types';
 
 interface DashboardStats {
   totalItems: number;
   lowStockItems: number;
-  totalClients: number;
+  totalNeighbours: number;
   todayTransactions: number;
 }
 
@@ -22,20 +22,20 @@ export function DashboardPage() {
     Promise.all([
       api.get<Item[]>('/api/items/'),
       api.get<Item[]>('/api/items/?low_stock=true'),
-      api.get<Client[]>('/api/clients/'),
+      api.get<Neighbour[]>('/api/neighbours/'),
       api.get<TransactionListItem[]>('/api/transactions/?today=true'),
     ])
-      .then(([items, lowStock, clients, transactions]) => {
+      .then(([items, lowStock, neighbours, transactions]) => {
         setStats({
           totalItems: items.length,
           lowStockItems: lowStock.length,
-          totalClients: clients.length,
+          totalNeighbours: neighbours.length,
           todayTransactions: transactions.length,
         });
         setRecentTransactions(transactions.slice(0, 5));
       })
       .catch(() => {
-        setStats({ totalItems: 0, lowStockItems: 0, totalClients: 0, todayTransactions: 0 });
+        setStats({ totalItems: 0, lowStockItems: 0, totalNeighbours: 0, todayTransactions: 0 });
       })
       .finally(() => setLoading(false));
   }, []);
@@ -55,7 +55,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="Total Items" value={stats?.totalItems ?? 0} />
         <StatCard label="Low Stock Items" value={stats?.lowStockItems ?? 0} variant="warning" />
-        <StatCard label="Total Clients" value={stats?.totalClients ?? 0} />
+        <StatCard label="Total Neighbours" value={stats?.totalNeighbours ?? 0} />
         <StatCard label="Today's Transactions" value={stats?.todayTransactions ?? 0} />
       </div>
 
@@ -69,7 +69,7 @@ export function DashboardPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Neighbour</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
                 </tr>
@@ -80,7 +80,7 @@ export function DashboardPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {new Date(tx.created_at).toLocaleTimeString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{tx.client_name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{tx.neighbour_name}</td>
                     <td className="px-6 py-4 text-sm">
                       <CurrencyDisplay amount={tx.total_amount} />
                     </td>

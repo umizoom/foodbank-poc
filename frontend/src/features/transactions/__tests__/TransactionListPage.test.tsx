@@ -26,7 +26,7 @@ describe('TransactionListPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('filter-date-from')).toBeInTheDocument();
       expect(screen.getByTestId('filter-date-to')).toBeInTheDocument();
-      expect(screen.getByTestId('filter-client')).toBeInTheDocument();
+      expect(screen.getByTestId('filter-neighbour')).toBeInTheDocument();
     });
   });
 });

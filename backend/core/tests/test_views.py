@@ -4,13 +4,13 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from core.models import Cart, CartItem, Client, Transaction
+from core.models import Cart, CartItem, Neighbour, Transaction
 from core.tests.factories import (
     CartFactory,
     CartItemFactory,
     CategoryFactory,
-    ClientFactory,
     ItemFactory,
+    NeighbourFactory,
     TransactionFactory,
     TransactionItemFactory,
     UserFactory,
@@ -99,34 +99,34 @@ class TestItemViews:
 
 
 @pytest.mark.django_db
-class TestClientViews:
-    def test_list_clients(self, api_client):
-        ClientFactory.create_batch(3)
-        response = api_client.get("/api/clients/")
+class TestNeighbourViews:
+    def test_list_neighbours(self, api_client):
+        NeighbourFactory.create_batch(3)
+        response = api_client.get("/api/neighbours/")
         assert response.status_code == 200
         assert len(response.data) == 3
 
-    def test_create_client(self, api_client):
+    def test_create_neighbour(self, api_client):
         response = api_client.post(
-            "/api/clients/", {"name": "Maria", "card_id": "CARD-NEW"}
+            "/api/neighbours/", {"name": "Maria", "card_id": "CARD-NEW"}
         )
         assert response.status_code == 201
         assert response.data["balance"] == "0.00"
 
     def test_lookup_by_card(self, api_client):
-        ClientFactory(card_id="RFID-LOOKUP")
-        response = api_client.get("/api/clients/lookup/?card_id=RFID-LOOKUP")
+        NeighbourFactory(card_id="RFID-LOOKUP")
+        response = api_client.get("/api/neighbours/lookup/?card_id=RFID-LOOKUP")
         assert response.status_code == 200
         assert response.data["card_id"] == "RFID-LOOKUP"
 
     def test_lookup_by_card_not_found(self, api_client):
-        response = api_client.get("/api/clients/lookup/?card_id=NONEXISTENT")
+        response = api_client.get("/api/neighbours/lookup/?card_id=NONEXISTENT")
         assert response.status_code == 404
 
     def test_add_balance(self, api_client):
-        client = ClientFactory(balance="50.00")
+        neighbour = NeighbourFactory(balance="50.00")
         response = api_client.post(
-            f"/api/clients/{client.id}/balance/", {"amount": "25.00"}
+            f"/api/neighbours/{neighbour.id}/balance/", {"amount": "25.00"}
         )
         assert response.status_code == 200
         assert response.data["balance"] == "75.00"
@@ -135,14 +135,14 @@ class TestClientViews:
 @pytest.mark.django_db
 class TestCartViews:
     def test_create_cart(self, api_client):
-        client = ClientFactory()
-        response = api_client.post("/api/carts/", {"client_id": client.id})
+        neighbour = NeighbourFactory()
+        response = api_client.post("/api/carts/", {"neighbour_id": neighbour.id})
         assert response.status_code == 201
-        assert response.data["client"] == client.id
+        assert response.data["neighbour"] == neighbour.id
 
     def test_add_item_to_cart(self, api_client, admin_user):
-        client = ClientFactory()
-        cart = CartFactory(client=client, admin=admin_user)
+        neighbour = NeighbourFactory()
+        cart = CartFactory(neighbour=neighbour, admin=admin_user)
         item = ItemFactory(stock_count=10)
         response = api_client.post(
             f"/api/carts/{cart.id}/items/",
@@ -152,8 +152,8 @@ class TestCartViews:
         assert len(response.data["items"]) == 1
 
     def test_checkout(self, api_client, admin_user):
-        client = ClientFactory(balance="100.00")
-        cart = CartFactory(client=client, admin=admin_user)
+        neighbour = NeighbourFactory(balance="100.00")
+        cart = CartFactory(neighbour=neighbour, admin=admin_user)
         item = ItemFactory(cost="10.00", stock_count=20)
         CartItemFactory(cart=cart, item=item, quantity=2)
 
@@ -162,8 +162,8 @@ class TestCartViews:
         assert response.data["total_amount"] == "20.00"
 
     def test_cancel_cart(self, api_client, admin_user):
-        client = ClientFactory()
-        cart = CartFactory(client=client, admin=admin_user)
+        neighbour = NeighbourFactory()
+        cart = CartFactory(neighbour=neighbour, admin=admin_user)
         response = api_client.delete(f"/api/carts/{cart.id}/")
         assert response.status_code == 204
 
@@ -171,8 +171,8 @@ class TestCartViews:
 @pytest.mark.django_db
 class TestTransactionViews:
     def test_list_transactions(self, api_client, admin_user):
-        client = ClientFactory(balance="100.00")
-        cart = CartFactory(client=client, admin=admin_user)
+        neighbour = NeighbourFactory(balance="100.00")
+        cart = CartFactory(neighbour=neighbour, admin=admin_user)
         item = ItemFactory(cost="5.00", stock_count=10)
         CartItemFactory(cart=cart, item=item, quantity=1)
         from core.services import checkout_service

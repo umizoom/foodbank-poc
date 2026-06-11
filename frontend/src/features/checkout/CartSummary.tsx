@@ -2,12 +2,12 @@ import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
 
 interface CartSummaryProps {
   cartTotal: string;
-  clientBalance: string;
+  neighbourBalance: string;
 }
 
-export function CartSummary({ cartTotal, clientBalance }: CartSummaryProps) {
+export function CartSummary({ cartTotal, neighbourBalance }: CartSummaryProps) {
   const total = parseFloat(cartTotal);
-  const balance = parseFloat(clientBalance);
+  const balance = parseFloat(neighbourBalance);
   const remaining = balance - total;
   const isOverBudget = remaining < 0;
 
@@ -20,9 +20,9 @@ export function CartSummary({ cartTotal, clientBalance }: CartSummaryProps) {
         </span>
       </div>
       <div className="flex justify-between text-sm mb-1">
-        <span className="text-gray-600">Client Balance:</span>
+        <span className="text-gray-600">Neighbour Balance:</span>
         <span className="font-medium">
-          <CurrencyDisplay amount={clientBalance} />
+          <CurrencyDisplay amount={neighbourBalance} />
         </span>
       </div>
       <div className="flex justify-between text-sm border-t border-gray-200 pt-2 mt-2">

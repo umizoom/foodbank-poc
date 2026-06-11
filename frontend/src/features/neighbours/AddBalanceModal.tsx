@@ -7,8 +7,8 @@ import { Button } from '@/shared/components/Button';
 import { AlertBanner } from '@/shared/components/AlertBanner';
 
 interface AddBalanceModalProps {
-  clientId: number;
-  clientName: string;
+  neighbourId: number;
+  neighbourName: string;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -17,7 +17,7 @@ interface BalanceFormData {
   amount: string;
 }
 
-export function AddBalanceModal({ clientId, clientName, onClose, onSuccess }: AddBalanceModalProps) {
+export function AddBalanceModal({ neighbourId, neighbourName, onClose, onSuccess }: AddBalanceModalProps) {
   const { addToast } = useNotification();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,8 +28,8 @@ export function AddBalanceModal({ clientId, clientName, onClose, onSuccess }: Ad
     setLoading(true);
     setError(null);
     try {
-      await api.post(`/api/clients/${clientId}/balance/`, { amount: data.amount });
-      addToast('success', `Added $${data.amount} to ${clientName}'s balance`);
+      await api.post(`/api/neighbours/${neighbourId}/balance/`, { amount: data.amount });
+      addToast('success', `Added $${data.amount} to ${neighbourName}'s balance`);
       onSuccess();
     } catch {
       setError('Failed to add balance. Amount may exceed maximum ($2,000.00).');
@@ -43,7 +43,7 @@ export function AddBalanceModal({ clientId, clientName, onClose, onSuccess }: Ad
       <div className="fixed inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">Add Balance</h2>
-        <p className="text-sm text-gray-500 mb-4">Adding to: {clientName}</p>
+        <p className="text-sm text-gray-500 mb-4">Adding to: {neighbourName}</p>
 
         {error && <AlertBanner type="error" message={error} onDismiss={() => setError(null)} />}
 

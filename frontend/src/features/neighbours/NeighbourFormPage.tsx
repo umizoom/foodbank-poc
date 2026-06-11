@@ -8,10 +8,10 @@ import { PageHeader } from '@/shared/components/PageHeader';
 import { FormField } from '@/shared/components/FormField';
 import { Button } from '@/shared/components/Button';
 import { AlertBanner } from '@/shared/components/AlertBanner';
-import type { Client } from '@/shared/api/types';
+import type { Neighbour } from '@/shared/api/types';
 import { COMMON_ALLERGIES } from '@/shared/api/types';
 
-interface ClientFormData {
+interface NeighbourFormData {
   name: string;
   card_id: string;
   allergies: string[];
@@ -20,7 +20,7 @@ interface ClientFormData {
   notes: string;
 }
 
-export function ClientFormPage() {
+export function NeighbourFormPage() {
   const { id } = useParams();
   const isEdit = !!id;
   const navigate = useNavigate();
@@ -37,40 +37,40 @@ export function ClientFormPage() {
     setError,
     control,
     formState: { errors },
-  } = useForm<ClientFormData>({
+  } = useForm<NeighbourFormData>({
     defaultValues: { allergies: [], catchment_area: true, diaper_size: '', notes: '' },
   });
 
-  const handleApiError = useFormApiError<ClientFormData>(setError);
+  const handleApiError = useFormApiError<NeighbourFormData>(setError);
 
   useEffect(() => {
     if (isEdit) {
-      api.get<Client>(`/api/clients/${id}/`).then((client) => {
+      api.get<Neighbour>(`/api/neighbours/${id}/`).then((neighbour) => {
         reset({
-          name: client.name,
-          card_id: client.card_id,
-          allergies: client.allergies,
-          diaper_size: client.diaper_size,
-          catchment_area: client.catchment_area,
-          notes: client.notes,
+          name: neighbour.name,
+          card_id: neighbour.card_id,
+          allergies: neighbour.allergies,
+          diaper_size: neighbour.diaper_size,
+          catchment_area: neighbour.catchment_area,
+          notes: neighbour.notes,
         });
       });
     }
   }, [id, isEdit, reset]);
 
-  const onSubmit = async (data: ClientFormData) => {
+  const onSubmit = async (data: NeighbourFormData) => {
     setLoading(true);
     setGeneralError(null);
 
     try {
       if (isEdit) {
-        await api.put(`/api/clients/${id}/`, data);
-        addToast('success', `Client "${data.name}" updated`);
-        navigate(`/clients/${id}`);
+        await api.put(`/api/neighbours/${id}/`, data);
+        addToast('success', `Neighbour "${data.name}" updated`);
+        navigate(`/neighbours/${id}`);
       } else {
-        await api.post('/api/clients/', data);
-        addToast('success', `Client "${data.name}" registered`);
-        navigate('/clients');
+        await api.post('/api/neighbours/', data);
+        addToast('success', `Neighbour "${data.name}" registered`);
+        navigate('/neighbours');
       }
     } catch (e) {
       const msg = handleApiError(e);
@@ -84,17 +84,17 @@ export function ClientFormPage() {
 
   return (
     <div className="max-w-lg">
-      <PageHeader title={isEdit ? 'Edit Client' : 'Register Client'} />
+      <PageHeader title={isEdit ? 'Edit Neighbour' : 'Register Neighbour'} />
 
       {generalError && <AlertBanner type="error" message={generalError} onDismiss={() => setGeneralError(null)} />}
 
-      <form onSubmit={handleSubmit(onSubmit)} data-testid="client-form">
+      <form onSubmit={handleSubmit(onSubmit)} data-testid="neighbour-form">
         <FormField label="Name" required error={errors.name?.message}>
           {(props) => (
             <input
-              {...register('name', { required: 'Client name is required', maxLength: { value: 200, message: 'Name must be under 200 characters' } })}
+              {...register('name', { required: 'Name is required', maxLength: { value: 200, message: 'Name must be under 200 characters' } })}
               className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              data-testid="client-name-input"
+              data-testid="neighbour-name-input"
               {...props}
             />
           )}
@@ -105,14 +105,14 @@ export function ClientFormPage() {
             <input
               {...register('card_id', { required: 'Card ID is required', maxLength: { value: 100, message: 'Card ID must be under 100 characters' } })}
               className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              data-testid="client-card-input"
+              data-testid="neighbour-card-input"
               {...props}
             />
           )}
         </FormField>
 
         <hr className="my-6 border-gray-200" />
-        <h3 className="text-md font-semibold text-gray-900 mb-4">Client Information</h3>
+        <h3 className="text-md font-semibold text-gray-900 mb-4">Neighbour Information</h3>
 
         <Controller
           name="allergies"
@@ -204,7 +204,7 @@ export function ClientFormPage() {
               {...register('diaper_size')}
               placeholder="e.g. Size 3, Newborn, Pull-ups"
               className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              data-testid="client-diaper-input"
+              data-testid="neighbour-diaper-input"
               {...props}
             />
           )}
@@ -217,9 +217,9 @@ export function ClientFormPage() {
                 type="checkbox"
                 {...register('catchment_area')}
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                data-testid="client-catchment-input"
+                data-testid="neighbour-catchment-input"
               />
-              <span className="text-sm text-gray-700">Client lives in catchment area</span>
+              <span className="text-sm text-gray-700">Neighbour lives in catchment area</span>
             </label>
           )}
         </FormField>
@@ -229,19 +229,19 @@ export function ClientFormPage() {
             <textarea
               {...register('notes')}
               rows={3}
-              placeholder="Additional notes about this client..."
+              placeholder="Additional notes about this neighbour..."
               className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              data-testid="client-notes-input"
+              data-testid="neighbour-notes-input"
               {...props}
             />
           )}
         </FormField>
 
         <div className="flex gap-3 mt-6">
-          <Button type="submit" loading={loading} data-testid="client-submit-button">
+          <Button type="submit" loading={loading} data-testid="neighbour-submit-button">
             {isEdit ? 'Save Changes' : 'Register'}
           </Button>
-          <Button variant="secondary" type="button" onClick={() => navigate(isEdit ? `/clients/${id}` : '/clients')} data-testid="client-cancel-button">
+          <Button variant="secondary" type="button" onClick={() => navigate(isEdit ? `/neighbours/${id}` : '/neighbours')} data-testid="neighbour-cancel-button">
             Cancel
           </Button>
         </div>
