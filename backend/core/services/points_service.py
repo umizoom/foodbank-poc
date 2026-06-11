@@ -1,7 +1,11 @@
 from decimal import Decimal
 
 
+# Starting balance points by household composition.
+# Key: (num_adults, num_children) — values from "Household point calculation.pdf".
+# In-catchment neighbours receive higher points than out-of-catchment (external) neighbours.
 POINTS_TABLE = {
+    # 1 adult households
     (1, 0): {"in_catchment": Decimal("58"), "out_of_catchment": Decimal("41")},
     (1, 1): {"in_catchment": Decimal("91"), "out_of_catchment": Decimal("64")},
     (1, 2): {"in_catchment": Decimal("124"), "out_of_catchment": Decimal("86")},
@@ -10,6 +14,7 @@ POINTS_TABLE = {
     (1, 5): {"in_catchment": Decimal("211"), "out_of_catchment": Decimal("147")},
     (1, 6): {"in_catchment": Decimal("231"), "out_of_catchment": Decimal("162")},
     (1, 7): {"in_catchment": Decimal("247"), "out_of_catchment": Decimal("173")},
+    # 2 adult households
     (2, 0): {"in_catchment": Decimal("106"), "out_of_catchment": Decimal("74")},
     (2, 1): {"in_catchment": Decimal("138"), "out_of_catchment": Decimal("96")},
     (2, 2): {"in_catchment": Decimal("166"), "out_of_catchment": Decimal("116")},
@@ -18,6 +23,7 @@ POINTS_TABLE = {
     (2, 5): {"in_catchment": Decimal("243"), "out_of_catchment": Decimal("170")},
     (2, 6): {"in_catchment": Decimal("259"), "out_of_catchment": Decimal("181")},
     (2, 7): {"in_catchment": Decimal("289"), "out_of_catchment": Decimal("202")},
+    # 3 adult households
     (3, 0): {"in_catchment": Decimal("152"), "out_of_catchment": Decimal("106")},
     (3, 1): {"in_catchment": Decimal("180"), "out_of_catchment": Decimal("126")},
     (3, 2): {"in_catchment": Decimal("204"), "out_of_catchment": Decimal("142")},
@@ -26,6 +32,7 @@ POINTS_TABLE = {
     (3, 5): {"in_catchment": Decimal("271"), "out_of_catchment": Decimal("189")},
     (3, 6): {"in_catchment": Decimal("300"), "out_of_catchment": Decimal("210")},
     (3, 7): {"in_catchment": Decimal("330"), "out_of_catchment": Decimal("231")},
+    # 4 adult households
     (4, 0): {"in_catchment": Decimal("193"), "out_of_catchment": Decimal("135")},
     (4, 1): {"in_catchment": Decimal("216"), "out_of_catchment": Decimal("151")},
     (4, 2): {"in_catchment": Decimal("249"), "out_of_catchment": Decimal("175")},
@@ -34,6 +41,7 @@ POINTS_TABLE = {
     (4, 5): {"in_catchment": Decimal("312"), "out_of_catchment": Decimal("218")},
     (4, 6): {"in_catchment": Decimal("341"), "out_of_catchment": Decimal("239")},
     (4, 7): {"in_catchment": Decimal("371"), "out_of_catchment": Decimal("259")},
+    # 5 adult households
     (5, 0): {"in_catchment": Decimal("229"), "out_of_catchment": Decimal("161")},
     (5, 1): {"in_catchment": Decimal("262"), "out_of_catchment": Decimal("184")},
     (5, 2): {"in_catchment": Decimal("280"), "out_of_catchment": Decimal("196")},
@@ -42,6 +50,7 @@ POINTS_TABLE = {
     (5, 5): {"in_catchment": Decimal("353"), "out_of_catchment": Decimal("247")},
     (5, 6): {"in_catchment": Decimal("382"), "out_of_catchment": Decimal("267")},
     (5, 7): {"in_catchment": Decimal("412"), "out_of_catchment": Decimal("288")},
+    # 6 adult households
     (6, 0): {"in_catchment": Decimal("275"), "out_of_catchment": Decimal("193")},
     (6, 1): {"in_catchment": Decimal("292"), "out_of_catchment": Decimal("204")},
     (6, 2): {"in_catchment": Decimal("305"), "out_of_catchment": Decimal("214")},
@@ -50,6 +59,7 @@ POINTS_TABLE = {
     (6, 5): {"in_catchment": Decimal("394"), "out_of_catchment": Decimal("276")},
     (6, 6): {"in_catchment": Decimal("423"), "out_of_catchment": Decimal("296")},
     (6, 7): {"in_catchment": Decimal("506"), "out_of_catchment": Decimal("354")},
+    # 7 adult households
     (7, 0): {"in_catchment": Decimal("304"), "out_of_catchment": Decimal("213")},
     (7, 1): {"in_catchment": Decimal("317"), "out_of_catchment": Decimal("222")},
     (7, 2): {"in_catchment": Decimal("346"), "out_of_catchment": Decimal("242")},
