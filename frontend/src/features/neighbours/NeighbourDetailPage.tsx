@@ -101,6 +101,13 @@ export function NeighbourDetailPage() {
             </dd>
           </div>
           <div>
+            <dt className="text-sm text-gray-500">Family Size</dt>
+            <dd className="text-sm text-gray-900 mt-1">
+              {neighbour.num_adults} adult{neighbour.num_adults !== 1 ? 's' : ''}
+              {neighbour.num_children > 0 && `, ${neighbour.num_children} child${neighbour.num_children !== 1 ? 'ren' : ''}`}
+            </dd>
+          </div>
+          <div>
             <dt className="text-sm text-gray-500">Catchment Area</dt>
             <dd className="text-sm text-gray-900 mt-1">
               {neighbour.catchment_area ? (

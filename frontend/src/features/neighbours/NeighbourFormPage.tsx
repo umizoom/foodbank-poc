@@ -14,6 +14,8 @@ import { COMMON_ALLERGIES } from '@/shared/api/types';
 interface NeighbourFormData {
   name: string;
   card_id: string;
+  num_adults: number;
+  num_children: number;
   allergies: string[];
   diaper_size: string;
   catchment_area: boolean;
@@ -38,7 +40,7 @@ export function NeighbourFormPage() {
     control,
     formState: { errors },
   } = useForm<NeighbourFormData>({
-    defaultValues: { allergies: [], catchment_area: true, diaper_size: '', notes: '' },
+    defaultValues: { allergies: [], catchment_area: true, diaper_size: '', notes: '', num_adults: 1, num_children: 0 },
   });
 
   const handleApiError = useFormApiError<NeighbourFormData>(setError);
@@ -49,6 +51,8 @@ export function NeighbourFormPage() {
         reset({
           name: neighbour.name,
           card_id: neighbour.card_id,
+          num_adults: neighbour.num_adults,
+          num_children: neighbour.num_children,
           allergies: neighbour.allergies,
           diaper_size: neighbour.diaper_size,
           catchment_area: neighbour.catchment_area,
@@ -113,6 +117,46 @@ export function NeighbourFormPage() {
 
         <hr className="my-6 border-gray-200" />
         <h3 className="text-md font-semibold text-gray-900 mb-4">Neighbour Information</h3>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Number of Adults" required error={errors.num_adults?.message}>
+            {(props) => (
+              <input
+                type="number"
+                {...register('num_adults', {
+                  required: 'Number of adults is required',
+                  valueAsNumber: true,
+                  min: { value: 1, message: 'Must be at least 1' },
+                  max: { value: 7, message: 'Cannot exceed 7' },
+                })}
+                min={1}
+                max={7}
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                data-testid="neighbour-adults-input"
+                {...props}
+              />
+            )}
+          </FormField>
+
+          <FormField label="Number of Children" required error={errors.num_children?.message}>
+            {(props) => (
+              <input
+                type="number"
+                {...register('num_children', {
+                  required: 'Number of children is required',
+                  valueAsNumber: true,
+                  min: { value: 0, message: 'Cannot be negative' },
+                  max: { value: 7, message: 'Cannot exceed 7' },
+                })}
+                min={0}
+                max={7}
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                data-testid="neighbour-children-input"
+                {...props}
+              />
+            )}
+          </FormField>
+        </div>
 
         <Controller
           name="allergies"

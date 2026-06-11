@@ -40,6 +40,8 @@ class NeighbourFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("name")
     card_id = factory.Sequence(lambda n: f"CARD-{n:04d}")
     balance = "100.00"
+    num_adults = 1
+    num_children = 0
 
 
 class CartFactory(factory.django.DjangoModelFactory):

@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from core.models import Category, Item, Neighbour, Transaction, TransactionItem
+from core.services.points_service import calculate_starting_balance
 
 User = get_user_model()
 
@@ -134,40 +135,61 @@ class Command(BaseCommand):
             {
                 "name": "Maria Garcia",
                 "card_id": "CARD-001",
-                "balance": Decimal("150.00"),
+                "num_adults": 2,
+                "num_children": 3,
+                "catchment_area": True,
                 "allergies": ["Lactose free"],
                 "notes": "Family of 5. Prefers halal options when available.",
             },
             {
                 "name": "James Wilson",
                 "card_id": "CARD-002",
-                "balance": Decimal("75.00"),
+                "num_adults": 1,
+                "num_children": 1,
+                "catchment_area": True,
                 "diaper_size": "Size 3",
                 "notes": "New baby expected July 2026. May need extra formula.",
             },
             {
                 "name": "Sarah Johnson",
                 "card_id": "CARD-003",
-                "balance": Decimal("200.00"),
+                "num_adults": 1,
+                "num_children": 0,
+                "catchment_area": True,
                 "allergies": ["Gluten free", "Lactose free"],
                 "notes": "Elderly - needs help carrying bags to car.",
             },
             {
                 "name": "David Lee",
                 "card_id": "CARD-004",
-                "balance": Decimal("50.00"),
+                "num_adults": 1,
+                "num_children": 0,
+                "catchment_area": False,
             },
             {
                 "name": "Emma Brown",
                 "card_id": "CARD-005",
-                "balance": Decimal("120.00"),
+                "num_adults": 2,
+                "num_children": 2,
+                "catchment_area": True,
                 "diaper_size": "Size 5",
                 "notes": "Vegetarian household. Twin toddlers.",
             },
         ]
         created_count = 0
         for neighbour_data in default_neighbours:
-            defaults = {"name": neighbour_data["name"], "balance": neighbour_data["balance"]}
+            num_adults = neighbour_data["num_adults"]
+            num_children = neighbour_data["num_children"]
+            catchment_area = neighbour_data["catchment_area"]
+            balance = calculate_starting_balance(num_adults, num_children, catchment_area)
+
+            defaults = {
+                "name": neighbour_data["name"],
+                "balance": balance,
+                "num_adults": num_adults,
+                "num_children": num_children,
+                "catchment_area": catchment_area,
+            }
             if "allergies" in neighbour_data:
                 defaults["allergies"] = neighbour_data["allergies"]
             if "diaper_size" in neighbour_data:

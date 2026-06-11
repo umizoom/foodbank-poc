@@ -108,10 +108,29 @@ class TestNeighbourViews:
 
     def test_create_neighbour(self, api_client):
         response = api_client.post(
-            "/api/neighbours/", {"name": "Maria", "card_id": "CARD-NEW"}
+            "/api/neighbours/",
+            {"name": "Maria", "card_id": "CARD-NEW", "num_adults": 1, "num_children": 0, "catchment_area": True},
         )
         assert response.status_code == 201
-        assert response.data["balance"] == "0.00"
+        assert response.data["balance"] == "58.00"
+        assert response.data["num_adults"] == 1
+        assert response.data["num_children"] == 0
+
+    def test_create_neighbour_out_of_catchment(self, api_client):
+        response = api_client.post(
+            "/api/neighbours/",
+            {"name": "Bob", "card_id": "CARD-OOC", "num_adults": 2, "num_children": 1, "catchment_area": False},
+        )
+        assert response.status_code == 201
+        assert response.data["balance"] == "96.00"
+
+    def test_create_neighbour_large_family(self, api_client):
+        response = api_client.post(
+            "/api/neighbours/",
+            {"name": "Large Family", "card_id": "CARD-LG", "num_adults": 4, "num_children": 5, "catchment_area": True},
+        )
+        assert response.status_code == 201
+        assert response.data["balance"] == "312.00"
 
     def test_lookup_by_card(self, api_client):
         NeighbourFactory(card_id="RFID-LOOKUP")
