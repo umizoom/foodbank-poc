@@ -136,18 +136,21 @@ class Command(BaseCommand):
                 "card_id": "CARD-001",
                 "balance": Decimal("150.00"),
                 "allergies": ["Lactose free"],
+                "notes": "Family of 5. Prefers halal options when available.",
             },
             {
                 "name": "James Wilson",
                 "card_id": "CARD-002",
                 "balance": Decimal("75.00"),
                 "diaper_size": "Size 3",
+                "notes": "New baby expected July 2026. May need extra formula.",
             },
             {
                 "name": "Sarah Johnson",
                 "card_id": "CARD-003",
                 "balance": Decimal("200.00"),
                 "allergies": ["Gluten free", "Lactose free"],
+                "notes": "Elderly - needs help carrying bags to car.",
             },
             {
                 "name": "David Lee",
@@ -159,6 +162,7 @@ class Command(BaseCommand):
                 "card_id": "CARD-005",
                 "balance": Decimal("120.00"),
                 "diaper_size": "Size 5",
+                "notes": "Vegetarian household. Twin toddlers.",
             },
         ]
         created_count = 0
@@ -168,13 +172,15 @@ class Command(BaseCommand):
                 defaults["allergies"] = client_data["allergies"]
             if "diaper_size" in client_data:
                 defaults["diaper_size"] = client_data["diaper_size"]
-            _, created = Client.objects.get_or_create(
+            if "notes" in client_data:
+                defaults["notes"] = client_data["notes"]
+            _, created = Client.objects.update_or_create(
                 card_id=client_data["card_id"],
                 defaults=defaults,
             )
             if created:
                 created_count += 1
-        self.stdout.write(f"Clients: {created_count} created, {len(default_clients) - created_count} already existed")
+        self.stdout.write(f"Clients: {created_count} created, {len(default_clients) - created_count} updated")
 
     def _create_transactions(self):
         admin = User.objects.filter(username="admin").first()
