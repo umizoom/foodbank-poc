@@ -1,20 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { api } from '@/shared/api/client';
 import type { TransactionListItem } from '@/shared/api/types';
 
-interface UseTransactionsParams {
+interface RunTransactionsParams {
   dateFrom?: string;
   dateTo?: string;
   neighbour?: number;
   today?: boolean;
 }
 
-export function useTransactions(params?: UseTransactionsParams) {
+export function useTransactions() {
   const [transactions, setTransactions] = useState<TransactionListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTransactions = useCallback(() => {
+  const runTransactions = useCallback((params?: RunTransactionsParams) => {
     const query = new URLSearchParams();
     if (params?.dateFrom) query.set('date_from', params.dateFrom);
     if (params?.dateTo) query.set('date_to', params.dateTo);
@@ -31,11 +31,7 @@ export function useTransactions(params?: UseTransactionsParams) {
       .then(setTransactions)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [params?.dateFrom, params?.dateTo, params?.neighbour, params?.today]);
+  }, []);
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
-
-  return { transactions, loading, error, refetch: fetchTransactions };
+  return { transactions, loading, error, runTransactions };
 }

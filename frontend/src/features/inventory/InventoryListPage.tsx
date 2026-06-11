@@ -91,7 +91,8 @@ export function InventoryListPage() {
   ];
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
+      <div className="flex-shrink-0">
       <PageHeader
         title="Inventory"
         actions={
@@ -135,7 +136,9 @@ export function InventoryListPage() {
           </span>
         </div>
       )}
+      </div>
 
+      <div className="flex-1 overflow-y-auto min-h-0">
       <DataTable
         columns={columns}
         data={items}
@@ -144,6 +147,7 @@ export function InventoryListPage() {
         keyExtractor={(item) => item.id}
         onRowClick={(item) => navigate(`/inventory/${item.id}/edit`)}
       />
+      </div>
 
       <ConfirmModal
         open={!!deleteTarget}
