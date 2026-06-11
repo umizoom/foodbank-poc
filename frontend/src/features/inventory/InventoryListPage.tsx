@@ -63,21 +63,21 @@ export function InventoryListPage() {
       render: (item) => (
         <div className="flex gap-2">
           <button
-            onClick={() => navigate(`/inventory/${item.id}/edit`)}
+            onClick={(e) => { e.stopPropagation(); navigate(`/inventory/${item.id}/edit`); }}
             className="text-blue-600 hover:underline text-sm"
             data-testid={`edit-item-${item.id}`}
           >
             Edit
           </button>
           <button
-            onClick={() => setStockTarget(item)}
+            onClick={(e) => { e.stopPropagation(); setStockTarget(item); }}
             className="text-green-600 hover:underline text-sm"
             data-testid={`stock-item-${item.id}`}
           >
             Stock
           </button>
           <button
-            onClick={() => setDeleteTarget(item)}
+            onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
             className="text-red-600 hover:underline text-sm"
             data-testid={`delete-item-${item.id}`}
           >
@@ -121,6 +121,7 @@ export function InventoryListPage() {
         loading={loading}
         emptyMessage="No items in inventory. Add your first item to get started."
         keyExtractor={(item) => item.id}
+        onRowClick={(item) => navigate(`/inventory/${item.id}/edit`)}
       />
 
       <ConfirmModal

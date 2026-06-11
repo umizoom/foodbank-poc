@@ -30,19 +30,6 @@ export function TransactionListPage() {
     { key: 'total', header: 'Total', render: (tx) => <CurrencyDisplay amount={tx.total_amount} /> },
     { key: 'items', header: 'Items', render: (tx) => tx.item_count },
     { key: 'admin', header: 'Processed By', render: (tx) => tx.admin_username },
-    {
-      key: 'actions',
-      header: '',
-      render: (tx) => (
-        <button
-          onClick={() => navigate(`/transactions/${tx.id}`)}
-          className="text-blue-600 hover:underline text-sm"
-          data-testid={`view-transaction-${tx.id}`}
-        >
-          View
-        </button>
-      ),
-    },
   ];
 
   return (
@@ -92,6 +79,7 @@ export function TransactionListPage() {
         loading={loading}
         emptyMessage="No transactions found."
         keyExtractor={(tx) => tx.id}
+        onRowClick={(tx) => navigate(`/transactions/${tx.id}`)}
       />
     </div>
   );
