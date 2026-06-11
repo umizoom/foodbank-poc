@@ -62,7 +62,7 @@ npm run dev
 
 The frontend will be available at http://localhost:5173. Log in with:
 - Username: `admin`
-- Password: `changeme`
+- Password: `admin123`
 
 ## Quick Start (Docker)
 
