@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '@/shared/api/client';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
@@ -14,6 +14,7 @@ interface DashboardStats {
 }
 
 export function DashboardPage() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<TransactionListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +77,7 @@ export function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {recentTransactions.map((tx) => (
-                  <tr key={tx.id} className="hover:bg-gray-50">
+                  <tr key={tx.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/transactions/${tx.id}`)}>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {new Date(tx.created_at).toLocaleTimeString()}
                     </td>
@@ -84,10 +85,8 @@ export function DashboardPage() {
                     <td className="px-6 py-4 text-sm">
                       <CurrencyDisplay amount={tx.total_amount} />
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      <Link to={`/transactions/${tx.id}`} className="text-blue-600 hover:underline">
-                        {tx.item_count} items
-                      </Link>
+                    <td className="px-6 py-4 text-sm text-blue-600">
+                      {tx.item_count} items
                     </td>
                   </tr>
                 ))}
