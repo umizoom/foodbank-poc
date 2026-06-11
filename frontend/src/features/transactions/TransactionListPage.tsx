@@ -43,7 +43,7 @@ export function TransactionListPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-gray-300 px-3 py-2 text-base"
             data-testid="filter-date-from"
           />
         </div>
@@ -53,7 +53,7 @@ export function TransactionListPage() {
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-gray-300 px-3 py-2 text-base"
             data-testid="filter-date-to"
           />
         </div>
@@ -62,7 +62,7 @@ export function TransactionListPage() {
           <select
             value={neighbourFilter ?? ''}
             onChange={(e) => setNeighbourFilter(e.target.value ? Number(e.target.value) : undefined)}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="rounded-md border border-gray-300 px-3 py-2 text-base"
             data-testid="filter-neighbour"
           >
             <option value="">All Neighbours</option>

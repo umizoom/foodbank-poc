@@ -112,7 +112,7 @@ export function ReportsPage() {
               type="date"
               value={startDate}
               onChange={(e) => handleDateChange('start', e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="rounded-md border border-gray-300 px-3 py-2 text-base"
               data-testid="filter-date-from"
             />
           </div>
@@ -122,7 +122,7 @@ export function ReportsPage() {
               type="date"
               value={endDate}
               onChange={(e) => handleDateChange('end', e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="rounded-md border border-gray-300 px-3 py-2 text-base"
               data-testid="filter-date-to"
             />
           </div>

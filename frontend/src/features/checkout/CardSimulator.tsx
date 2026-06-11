@@ -56,7 +56,7 @@ export function CardSimulator({ onNeighbourIdentified }: CardSimulatorProps) {
             {(props) => (
               <input
                 {...register('card_id', { required: 'Please enter a card ID' })}
-                className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 placeholder="Enter card ID..."
                 data-testid="card-id-input"
                 {...props}
