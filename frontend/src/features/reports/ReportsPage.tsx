@@ -98,10 +98,10 @@ export function ReportsPage() {
               <button
                 key={p.value}
                 onClick={() => handlePreset(p.value)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
                   activePreset === p.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-blue-100 text-blue-800 border-blue-300'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
                 data-testid={`period-${p.value}`}
               >

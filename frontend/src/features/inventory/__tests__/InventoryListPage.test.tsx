@@ -43,27 +43,29 @@ describe('InventoryListPage', () => {
     expect(screen.getByTestId('category-filter')).toBeInTheDocument();
   });
 
-  it('shows low stock filter chip when lowStock param is in URL', async () => {
+  it('shows low stock filter button as active when lowStock param is in URL', async () => {
     renderWithProviders(<InventoryListPage />, { route: '/inventory?lowStock=true' });
 
     await waitFor(() => {
-      expect(screen.getByTestId('clear-low-stock-filter')).toBeInTheDocument();
-      expect(screen.getByText('Low Stock Only')).toBeInTheDocument();
+      const btn = screen.getByTestId('low-stock-filter');
+      expect(btn).toBeInTheDocument();
+      expect(btn.className).toContain('bg-yellow-100');
     });
   });
 
-  it('clears low stock filter when clear button is clicked', async () => {
+  it('deactivates low stock filter when toggle button is clicked', async () => {
     const user = userEvent.setup();
     renderWithProviders(<InventoryListPage />, { route: '/inventory?lowStock=true' });
 
     await waitFor(() => {
-      expect(screen.getByTestId('clear-low-stock-filter')).toBeInTheDocument();
+      expect(screen.getByTestId('low-stock-filter')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByTestId('clear-low-stock-filter'));
+    await user.click(screen.getByTestId('low-stock-filter'));
 
     await waitFor(() => {
-      expect(screen.queryByTestId('clear-low-stock-filter')).not.toBeInTheDocument();
+      const btn = screen.getByTestId('low-stock-filter');
+      expect(btn.className).not.toContain('bg-yellow-100');
     });
   });
 });

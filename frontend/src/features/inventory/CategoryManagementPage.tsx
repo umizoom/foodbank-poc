@@ -65,7 +65,14 @@ export function CategoryManagementPage() {
 
   return (
     <div>
-      <PageHeader title="Categories" />
+      <PageHeader
+        title="Categories"
+        actions={
+          <Link to="/inventory">
+            <Button variant="secondary">Back to Inventory</Button>
+          </Link>
+        }
+      />
 
       {error && <AlertBanner type="error" message={error} onDismiss={() => setError(null)} />}
 
