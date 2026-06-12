@@ -116,26 +116,25 @@ export function InventoryListPage() {
           value={categoryFilter}
           onChange={setCategoryFilter}
         />
+        <button
+          onClick={() => {
+            if (lowStockFilter) {
+              searchParams.delete('lowStock');
+            } else {
+              searchParams.set('lowStock', 'true');
+            }
+            setSearchParams(searchParams);
+          }}
+          className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+            lowStockFilter
+              ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+              : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+          data-testid="low-stock-filter"
+        >
+          Low Stock
+        </button>
       </div>
-
-      {lowStockFilter && (
-        <div className="mb-4 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 text-yellow-800 px-3 py-1 text-sm font-medium">
-            Low Stock Only
-            <button
-              onClick={() => {
-                searchParams.delete('lowStock');
-                setSearchParams(searchParams);
-              }}
-              className="ml-1 text-yellow-600 hover:text-yellow-900"
-              aria-label="Clear low stock filter"
-              data-testid="clear-low-stock-filter"
-            >
-              &times;
-            </button>
-          </span>
-        </div>
-      )}
       </div>
 
       <div className="flex-1 overflow-y-auto min-h-0">
