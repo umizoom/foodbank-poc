@@ -13,6 +13,8 @@ export interface Item {
   stock_count: number;
   low_stock_threshold: number;
   is_low_stock: boolean;
+  track_stock: boolean;
+  max_cost: number;
   created_at: string;
   updated_at: string;
 }
@@ -49,6 +51,7 @@ export interface CartItem {
   item_cost: string;
   quantity: number;
   line_total: string;
+  unit_cost_override: string | null;
 }
 
 export interface Cart {
@@ -122,6 +125,7 @@ export interface CartCreatePayload {
 export interface CartItemAddPayload {
   item_id: number;
   quantity: number;
+  unit_cost_override?: number;
 }
 
 export interface CartItemUpdatePayload {

@@ -22,6 +22,8 @@ class Item(models.Model):
     cost = models.DecimalField(max_digits=8, decimal_places=2)
     stock_count = models.IntegerField(default=0)
     low_stock_threshold = models.IntegerField(default=10)
+    track_stock = models.BooleanField(default=True)
+    max_cost = models.PositiveIntegerField(default=5)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -127,11 +129,21 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     item = models.ForeignKey(Item, on_delete=models.PROTECT, related_name="cart_items")
     quantity = models.IntegerField()
+    unit_cost_override = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["cart", "item"], name="unique_cart_item"
+                fields=["cart", "item"],
+                condition=models.Q(unit_cost_override__isnull=True),
+                name="unique_cart_item_standard",
+            ),
+            models.UniqueConstraint(
+                fields=["cart", "item", "unit_cost_override"],
+                condition=models.Q(unit_cost_override__isnull=False),
+                name="unique_cart_item_with_override",
             ),
             models.CheckConstraint(
                 check=models.Q(quantity__gt=0), name="cart_item_quantity_positive"
@@ -143,7 +155,8 @@ class CartItem(models.Model):
 
     @property
     def line_total(self):
-        return self.item.cost * self.quantity
+        cost = self.unit_cost_override if self.unit_cost_override is not None else self.item.cost
+        return cost * self.quantity
 
 
 class Transaction(models.Model):

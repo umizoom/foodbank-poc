@@ -19,7 +19,7 @@ export function CartItemRow({ cartItem, cartId, onUpdate }: CartItemRowProps) {
     }
     setUpdating(true);
     try {
-      await api.patch(`/api/carts/${cartId}/items/${cartItem.item}/`, { quantity: newQty });
+      await api.patch(`/api/carts/${cartId}/items/${cartItem.id}/`, { quantity: newQty });
       onUpdate();
     } catch {
       // Revert handled by refetch
@@ -31,7 +31,7 @@ export function CartItemRow({ cartItem, cartId, onUpdate }: CartItemRowProps) {
   const handleRemove = async () => {
     setUpdating(true);
     try {
-      await api.delete(`/api/carts/${cartId}/items/${cartItem.item}/`);
+      await api.delete(`/api/carts/${cartId}/items/${cartItem.id}/`);
       onUpdate();
     } catch {
       // Error silently handled

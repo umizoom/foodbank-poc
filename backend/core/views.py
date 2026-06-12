@@ -40,6 +40,24 @@ class CategoryViewSet(viewsets.ModelViewSet):
             item_count=models.Count("items")
         )
 
+    def update(self, request, *args, **kwargs):
+        category = self.get_object()
+        if category.name == "Extras":
+            return Response(
+                {"error": "The Extras category cannot be modified."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        category = self.get_object()
+        if category.name == "Extras":
+            return Response(
+                {"error": "The Extras category cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
+
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.select_related("category").all()
@@ -51,8 +69,26 @@ class ItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         if self.request.query_params.get("low_stock") == "true":
-            qs = qs.filter(stock_count__lte=F("low_stock_threshold"))
+            qs = qs.filter(stock_count__lte=F("low_stock_threshold"), track_stock=True)
         return qs
+
+    def update(self, request, *args, **kwargs):
+        item = self.get_object()
+        if not item.track_stock:
+            return Response(
+                {"error": "The Extras item can only be configured via the extras config page."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        item = self.get_object()
+        if not item.track_stock:
+            return Response(
+                {"error": "The Extras item cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=["patch"], url_path="stock")
     def update_stock(self, request, pk=None):
@@ -138,10 +174,21 @@ class CartViewSet(viewsets.GenericViewSet):
     def add_item(self, request, pk=None):
         serializer = CartItemAddSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        unit_cost_override = serializer.validated_data.get("unit_cost_override")
+        if unit_cost_override is not None:
+            item = Item.objects.get(id=serializer.validated_data["item_id"])
+            if unit_cost_override > item.max_cost:
+                return Response(
+                    {"unit_cost_override": [f"Cost cannot exceed ${item.max_cost}."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         checkout_service.add_to_cart(
             cart_id=pk,
             item_id=serializer.validated_data["item_id"],
             quantity=serializer.validated_data["quantity"],
+            unit_cost_override=unit_cost_override,
         )
         cart = checkout_service.get_cart(pk)
         return Response(CartSerializer(cart).data)
@@ -149,18 +196,18 @@ class CartViewSet(viewsets.GenericViewSet):
     @action(
         detail=True,
         methods=["patch", "delete"],
-        url_path=r"items/(?P<item_id>\d+)",
+        url_path=r"items/(?P<cart_item_id>\d+)",
     )
-    def manage_item(self, request, pk=None, item_id=None):
+    def manage_item(self, request, pk=None, cart_item_id=None):
         if request.method == "DELETE":
-            checkout_service.remove_from_cart(cart_id=pk, item_id=item_id)
+            checkout_service.remove_from_cart(cart_id=pk, cart_item_id=cart_item_id)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         serializer = CartItemUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         checkout_service.update_cart_quantity(
             cart_id=pk,
-            item_id=item_id,
+            cart_item_id=cart_item_id,
             quantity=serializer.validated_data["quantity"],
         )
         cart = checkout_service.get_cart(pk)
@@ -270,6 +317,31 @@ class ItemsSoldReportView(APIView):
 
         report = report_service.get_items_sold_report(parsed_start, parsed_end)
         return Response(report)
+
+
+class ExtrasConfigView(APIView):
+    def get(self, request):
+        item = Item.objects.filter(track_stock=False).first()
+        if item is None:
+            return Response({"max_cost": 5})
+        return Response({"max_cost": item.max_cost})
+
+    def patch(self, request):
+        max_cost = request.data.get("max_cost")
+        if max_cost is None or not isinstance(max_cost, int) or max_cost < 1:
+            return Response(
+                {"error": "max_cost must be a positive integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        item = Item.objects.filter(track_stock=False).first()
+        if item is None:
+            return Response(
+                {"error": "Extras item not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        item.max_cost = max_cost
+        item.save(update_fields=["max_cost", "updated_at"])
+        return Response({"max_cost": item.max_cost})
 
 
 @api_view(["GET"])

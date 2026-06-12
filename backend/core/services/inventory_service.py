@@ -40,7 +40,7 @@ def update_stock(item, quantity, operation="set"):
 
 
 def get_low_stock_items():
-    return Item.objects.filter(stock_count__lte=F("low_stock_threshold"))
+    return Item.objects.filter(stock_count__lte=F("low_stock_threshold"), track_stock=True)
 
 
 def get_low_stock_count():

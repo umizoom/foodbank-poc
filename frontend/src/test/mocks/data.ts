@@ -4,12 +4,13 @@ export const mockCategories: Category[] = [
   { id: 1, name: 'Dairy', item_count: 3 },
   { id: 2, name: 'Bakery', item_count: 2 },
   { id: 3, name: 'Produce', item_count: 1 },
+  { id: 4, name: 'Extras', item_count: 1 },
 ];
 
 export const mockItems: Item[] = [
-  { id: 1, name: 'Milk', category: 1, category_name: 'Dairy', cost: '4.50', stock_count: 20, low_stock_threshold: 10, is_low_stock: false, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
-  { id: 2, name: 'Bread', category: 2, category_name: 'Bakery', cost: '3.25', stock_count: 5, low_stock_threshold: 10, is_low_stock: true, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
-  { id: 3, name: 'Eggs', category: 1, category_name: 'Dairy', cost: '5.99', stock_count: 0, low_stock_threshold: 10, is_low_stock: true, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
+  { id: 1, name: 'Milk', category: 1, category_name: 'Dairy', cost: '4.50', stock_count: 20, low_stock_threshold: 10, is_low_stock: false, track_stock: true, max_cost: 5, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
+  { id: 2, name: 'Bread', category: 2, category_name: 'Bakery', cost: '3.25', stock_count: 5, low_stock_threshold: 10, is_low_stock: true, track_stock: true, max_cost: 5, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
+  { id: 3, name: 'Eggs', category: 1, category_name: 'Dairy', cost: '5.99', stock_count: 0, low_stock_threshold: 10, is_low_stock: true, track_stock: true, max_cost: 5, created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' },
 ];
 
 export const mockNeighbours: Neighbour[] = [
@@ -24,8 +25,8 @@ export const mockCart: Cart = {
   neighbour_balance: '50.00',
   status: 'open',
   items: [
-    { id: 1, item: 1, item_name: 'Milk', item_cost: '4.50', quantity: 2, line_total: '9.00' },
-    { id: 2, item: 2, item_name: 'Bread', item_cost: '3.25', quantity: 1, line_total: '3.25' },
+    { id: 1, item: 1, item_name: 'Milk', item_cost: '4.50', quantity: 2, line_total: '9.00', unit_cost_override: null },
+    { id: 2, item: 2, item_name: 'Bread', item_cost: '3.25', quantity: 1, line_total: '3.25', unit_cost_override: null },
   ],
   total: '12.25',
   created_at: '2026-01-15T10:00:00Z',

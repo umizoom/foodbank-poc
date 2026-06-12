@@ -32,12 +32,12 @@ def undo_transaction(transaction_id, admin):
         reason=BalanceLog.REASON_UNDO,
     )
 
-    for txn_item in txn.items.all():
-        if txn_item.item_id is not None:
+    for txn_item in txn.items.select_related("item").all():
+        if txn_item.item_id is not None and txn_item.item.track_stock:
             Item.objects.filter(id=txn_item.item_id).update(
                 stock_count=F("stock_count") + txn_item.quantity
             )
-        else:
+        elif txn_item.item_id is None:
             logger.warning(
                 "Cannot restore stock for deleted item: %s (transaction %s)",
                 txn_item.item_name,

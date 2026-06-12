@@ -38,10 +38,20 @@ class ItemSerializer(serializers.ModelSerializer):
             "stock_count",
             "low_stock_threshold",
             "is_low_stock",
+            "track_stock",
+            "max_cost",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "is_low_stock"]
+        read_only_fields = ["id", "created_at", "updated_at", "is_low_stock", "track_stock"]
+
+    def validate(self, data):
+        category = data.get("category")
+        if category and category.name == "Extras":
+            raise serializers.ValidationError(
+                {"category": "Items cannot be created in the Extras category."}
+            )
+        return data
 
     def validate_cost(self, value):
         if value <= 0:
@@ -128,17 +138,23 @@ class BalanceLogSerializer(serializers.ModelSerializer):
 
 class CartItemSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source="item.name", read_only=True)
-    item_cost = serializers.DecimalField(
-        source="item.cost", max_digits=8, decimal_places=2, read_only=True
-    )
+    item_cost = serializers.SerializerMethodField()
     line_total = serializers.DecimalField(
         max_digits=10, decimal_places=2, read_only=True
+    )
+    unit_cost_override = serializers.DecimalField(
+        max_digits=8, decimal_places=2, read_only=True, allow_null=True
     )
 
     class Meta:
         model = CartItem
-        fields = ["id", "item", "item_name", "item_cost", "quantity", "line_total"]
-        read_only_fields = ["id", "item_name", "item_cost", "line_total"]
+        fields = ["id", "item", "item_name", "item_cost", "quantity", "line_total", "unit_cost_override"]
+        read_only_fields = ["id", "item_name", "item_cost", "line_total", "unit_cost_override"]
+
+    def get_item_cost(self, obj):
+        if obj.unit_cost_override is not None:
+            return f"{obj.unit_cost_override:.2f}"
+        return f"{obj.item.cost:.2f}"
 
     def validate_quantity(self, value):
         if value <= 0:
@@ -178,6 +194,14 @@ class CartCreateSerializer(serializers.Serializer):
 class CartItemAddSerializer(serializers.Serializer):
     item_id = serializers.IntegerField()
     quantity = serializers.IntegerField(min_value=1)
+    unit_cost_override = serializers.DecimalField(
+        max_digits=8, decimal_places=2, required=False, allow_null=True
+    )
+
+    def validate_unit_cost_override(self, value):
+        if value is not None and value < 1:
+            raise serializers.ValidationError("Cost must be at least $1.")
+        return value
 
 
 class CartItemUpdateSerializer(serializers.Serializer):

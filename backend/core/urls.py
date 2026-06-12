@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from core.views import (
     CartViewSet,
     CategoryViewSet,
+    ExtrasConfigView,
     ItemViewSet,
     ItemsSoldReportView,
     LoginView,
@@ -26,6 +27,7 @@ urlpatterns = [
     path("auth/login/", LoginView.as_view(), name="login"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
     path("auth/session/", SessionView.as_view(), name="session"),
+    path("extras-config/", ExtrasConfigView.as_view(), name="extras-config"),
     path("reports/items-sold/", ItemsSoldReportView.as_view(), name="report-items-sold"),
     path("health/", health_check, name="health-check"),
 ]

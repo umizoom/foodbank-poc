@@ -51,40 +51,54 @@ export function InventoryListPage() {
       render: (item) => (
         <div className="flex items-center gap-2">
           <span className="font-medium text-gray-900">{item.name}</span>
-          <LowStockIndicator stockCount={item.stock_count} threshold={item.low_stock_threshold} />
+          {item.track_stock && (
+            <LowStockIndicator stockCount={item.stock_count} threshold={item.low_stock_threshold} />
+          )}
         </div>
       ),
     },
     { key: 'category', header: 'Category', render: (item) => item.category_name },
-    { key: 'cost', header: 'Cost', render: (item) => <CurrencyDisplay amount={item.cost} /> },
-    { key: 'stock', header: 'Stock', render: (item) => item.stock_count },
-    { key: 'threshold', header: 'Threshold', render: (item) => item.low_stock_threshold },
+    { key: 'cost', header: 'Cost', render: (item) => item.track_stock ? <CurrencyDisplay amount={item.cost} /> : <span className="text-indigo-600">{`$1-$${item.max_cost}`}</span> },
+    { key: 'stock', header: 'Stock', render: (item) => item.track_stock ? item.stock_count : '—' },
+    { key: 'threshold', header: 'Threshold', render: (item) => item.track_stock ? item.low_stock_threshold : '—' },
     {
       key: 'actions',
       header: 'Actions',
       render: (item) => (
         <div className="flex gap-2">
-          <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/inventory/${item.id}/edit`); }}
-            className="text-blue-600 hover:underline text-sm"
-            data-testid={`edit-item-${item.id}`}
-          >
-            Edit
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setStockTarget(item); }}
-            className="text-green-600 hover:underline text-sm"
-            data-testid={`stock-item-${item.id}`}
-          >
-            Stock
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
-            className="text-red-600 hover:underline text-sm"
-            data-testid={`delete-item-${item.id}`}
-          >
-            Delete
-          </button>
+          {item.track_stock ? (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(`/inventory/${item.id}/edit`); }}
+                className="text-blue-600 hover:underline text-sm"
+                data-testid={`edit-item-${item.id}`}
+              >
+                Edit
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setStockTarget(item); }}
+                className="text-green-600 hover:underline text-sm"
+                data-testid={`stock-item-${item.id}`}
+              >
+                Stock
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
+                className="text-red-600 hover:underline text-sm"
+                data-testid={`delete-item-${item.id}`}
+              >
+                Delete
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate('/inventory/extras'); }}
+              className="text-blue-600 hover:underline text-sm"
+              data-testid={`configure-extras-${item.id}`}
+            >
+              Configure
+            </button>
+          )}
         </div>
       ),
     },
@@ -144,7 +158,7 @@ export function InventoryListPage() {
         loading={loading}
         emptyMessage="No items in inventory. Add your first item to get started."
         keyExtractor={(item) => item.id}
-        onRowClick={(item) => navigate(`/inventory/${item.id}/edit`)}
+        onRowClick={(item) => navigate(item.track_stock ? `/inventory/${item.id}/edit` : '/inventory/extras')}
       />
       </div>
 
