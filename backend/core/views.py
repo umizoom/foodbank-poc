@@ -25,7 +25,7 @@ from core.serializers import (
     TransactionListSerializer,
     TransactionSerializer,
 )
-from core.services import auth_service, checkout_service, inventory_service, neighbour_service, report_service
+from core.services import auth_service, checkout_service, inventory_service, neighbour_service, report_service, transaction_service
 from core.services.points_service import calculate_starting_balance
 
 
@@ -173,7 +173,7 @@ class CartViewSet(viewsets.GenericViewSet):
 
 
 class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Transaction.objects.select_related("neighbour", "admin").prefetch_related(
+    queryset = Transaction.objects.select_related("neighbour", "admin", "undone_by").prefetch_related(
         "items"
     )
     filterset_fields = ["neighbour"]
@@ -200,6 +200,13 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == "list":
             return TransactionListSerializer
         return TransactionSerializer
+
+    @action(detail=True, methods=["post"], url_path="undo")
+    def undo(self, request, pk=None):
+        txn = transaction_service.undo_transaction(
+            transaction_id=pk, admin=request.user
+        )
+        return Response(TransactionSerializer(txn).data)
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")

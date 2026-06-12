@@ -32,6 +32,12 @@ class CartNotFoundError(Exception):
         super().__init__(f"Cart not found: {cart_id}")
 
 
+class TransactionUndoError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(message)
+
+
 def global_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
@@ -60,6 +66,12 @@ def global_exception_handler(exc, context):
         return Response(
             {"error": "Cart not found"},
             status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if isinstance(exc, TransactionUndoError):
+        return Response(
+            {"error": "Cannot undo transaction", "detail": str(exc)},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     logger.exception("Unhandled exception", exc_info=exc)

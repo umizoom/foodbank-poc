@@ -1,22 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '@/shared/api/client';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { Button } from '@/shared/components/Button';
+import { ConfirmModal } from '@/shared/components/ConfirmModal';
+import { AlertBanner } from '@/shared/components/AlertBanner';
 import type { Transaction } from '@/shared/api/types';
 
 export function TransactionDetailPage() {
   const { id } = useParams();
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(true);
+  const [undoLoading, setUndoLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchTransaction = useCallback(() => {
     api
       .get<Transaction>(`/api/transactions/${id}/`)
       .then(setTransaction)
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    fetchTransaction();
+  }, [fetchTransaction]);
+
+  const handleUndo = async () => {
+    setUndoLoading(true);
+    setError(null);
+    try {
+      const updated = await api.post<Transaction>(`/api/transactions/${id}/undo/`);
+      setTransaction(updated);
+      setShowConfirm(false);
+    } catch (e: unknown) {
+      const detail = (e as { data?: { detail?: string } })?.data?.detail || 'Failed to undo transaction';
+      setError(detail);
+      setShowConfirm(false);
+    } finally {
+      setUndoLoading(false);
+    }
+  };
 
   if (loading || !transaction) {
     return (
@@ -28,7 +54,23 @@ export function TransactionDetailPage() {
 
   return (
     <div>
-      <PageHeader title={`Transaction #${transaction.id}`} />
+      <div className="flex items-center justify-between mb-6">
+        <PageHeader title={`Transaction #${transaction.id}`} />
+        {transaction.can_undo && (
+          <Button variant="danger" onClick={() => setShowConfirm(true)}>
+            Undo Transaction
+          </Button>
+        )}
+      </div>
+
+      {transaction.status === 'undone' && (
+        <AlertBanner
+          type="warning"
+          message={`This transaction was undone${transaction.undone_by_username ? ` by ${transaction.undone_by_username}` : ''}${transaction.undone_at ? ` on ${new Date(transaction.undone_at).toLocaleString()}` : ''}.`}
+        />
+      )}
+
+      {error && <AlertBanner type="error" message={error} onDismiss={() => setError(null)} />}
 
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
         <dl className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -86,6 +128,17 @@ export function TransactionDetailPage() {
           </tfoot>
         </table>
       </div>
+
+      <ConfirmModal
+        open={showConfirm}
+        title="Undo Transaction"
+        message={`This will refund ${transaction.total_amount} points to ${transaction.neighbour_name}'s balance and restore item stock. This action cannot be reversed.`}
+        confirmLabel="Undo Transaction"
+        variant="danger"
+        loading={undoLoading}
+        onConfirm={handleUndo}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   );
 }

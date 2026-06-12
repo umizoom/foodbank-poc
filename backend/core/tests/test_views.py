@@ -266,3 +266,53 @@ class TestHealthCheck:
         response = unauthenticated_client.get("/api/health/")
         assert response.status_code == 200
         assert response.data["status"] == "healthy"
+
+
+@pytest.mark.django_db
+class TestTransactionUndoView:
+    def test_undo_endpoint_success(self, api_client, admin_user):
+        neighbour = NeighbourFactory(balance="50.00")
+        txn = TransactionFactory(neighbour=neighbour, admin=admin_user, total="20.00")
+
+        response = api_client.post(f"/api/transactions/{txn.id}/undo/")
+
+        assert response.status_code == 200
+        assert response.data["status"] == "undone"
+        assert response.data["can_undo"] is False
+        neighbour.refresh_from_db()
+        assert neighbour.balance == 70
+
+    def test_undo_already_undone_returns_400(self, api_client, admin_user):
+        neighbour = NeighbourFactory(balance="50.00")
+        txn = TransactionFactory(neighbour=neighbour, admin=admin_user, total="10.00")
+
+        api_client.post(f"/api/transactions/{txn.id}/undo/")
+        response = api_client.post(f"/api/transactions/{txn.id}/undo/")
+
+        assert response.status_code == 400
+        assert "already been undone" in response.data["detail"]
+
+    def test_undo_unauthenticated_returns_403(self, unauthenticated_client):
+        txn = TransactionFactory(total="10.00")
+
+        response = unauthenticated_client.post(f"/api/transactions/{txn.id}/undo/")
+
+        assert response.status_code == 403
+
+    def test_transaction_list_includes_status(self, api_client, admin_user):
+        TransactionFactory(admin=admin_user, total="10.00")
+
+        response = api_client.get("/api/transactions/")
+
+        assert response.status_code == 200
+        assert "status" in response.data[0]
+        assert response.data[0]["status"] == "completed"
+
+    def test_transaction_detail_includes_can_undo(self, api_client, admin_user):
+        txn = TransactionFactory(admin=admin_user, total="10.00")
+
+        response = api_client.get(f"/api/transactions/{txn.id}/")
+
+        assert response.status_code == 200
+        assert "can_undo" in response.data
+        assert response.data["can_undo"] is True

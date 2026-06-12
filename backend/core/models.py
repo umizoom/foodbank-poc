@@ -82,6 +82,13 @@ class Neighbour(models.Model):
 
 
 class BalanceLog(models.Model):
+    REASON_TOPUP = "topup"
+    REASON_UNDO = "undo"
+    REASON_CHOICES = [
+        (REASON_TOPUP, "Top-up"),
+        (REASON_UNDO, "Undo"),
+    ]
+
     neighbour = models.ForeignKey(
         Neighbour, on_delete=models.CASCADE, related_name="balance_logs"
     )
@@ -91,6 +98,9 @@ class BalanceLog(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     balance_before = models.DecimalField(max_digits=10, decimal_places=2)
     balance_after = models.DecimalField(max_digits=10, decimal_places=2)
+    reason = models.CharField(
+        max_length=20, choices=REASON_CHOICES, default=REASON_TOPUP
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -137,6 +147,13 @@ class CartItem(models.Model):
 
 
 class Transaction(models.Model):
+    STATUS_COMPLETED = "completed"
+    STATUS_UNDONE = "undone"
+    STATUS_CHOICES = [
+        (STATUS_COMPLETED, "Completed"),
+        (STATUS_UNDONE, "Undone"),
+    ]
+
     neighbour = models.ForeignKey(
         Neighbour, on_delete=models.PROTECT, related_name="transactions"
     )
@@ -144,6 +161,17 @@ class Transaction(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="transactions"
     )
     total = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_COMPLETED
+    )
+    undone_at = models.DateTimeField(null=True, blank=True)
+    undone_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="undone_transactions",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

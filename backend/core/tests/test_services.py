@@ -9,9 +9,10 @@ from core.exceptions import (
     CartNotFoundError,
     InsufficientBalanceError,
     InsufficientStockError,
+    TransactionUndoError,
 )
-from core.models import Transaction
-from core.services import checkout_service, inventory_service, neighbour_service, report_service
+from core.models import BalanceLog, Transaction
+from core.services import checkout_service, inventory_service, neighbour_service, report_service, transaction_service
 from core.tests.factories import (
     CartFactory,
     CartItemFactory,
@@ -269,3 +270,88 @@ class TestReportService:
         today = timezone.localdate()
         result = report_service.get_items_sold_report(today, today)
         assert len(result["items"]) == 0
+
+
+@pytest.mark.django_db
+class TestTransactionService:
+    def test_undo_restores_balance(self):
+        neighbour = NeighbourFactory(balance="70.00")
+        admin = UserFactory()
+        txn = TransactionFactory(neighbour=neighbour, admin=admin, total="30.00")
+        ItemFactory(stock_count=10)
+
+        transaction_service.undo_transaction(txn.id, admin)
+
+        neighbour.refresh_from_db()
+        assert neighbour.balance == Decimal("100.00")
+
+    def test_undo_restores_stock(self):
+        neighbour = NeighbourFactory(balance="50.00")
+        admin = UserFactory()
+        item = ItemFactory(stock_count=17)
+        txn = TransactionFactory(neighbour=neighbour, admin=admin, total="30.00")
+        TransactionItemFactory(
+            transaction=txn, item=item, item_name=item.name,
+            unit_cost=Decimal("10.00"), quantity=3, line_total=Decimal("30.00"),
+        )
+
+        transaction_service.undo_transaction(txn.id, admin)
+
+        item.refresh_from_db()
+        assert item.stock_count == 20
+
+    def test_undo_marks_transaction_undone(self):
+        neighbour = NeighbourFactory(balance="50.00")
+        admin = UserFactory()
+        txn = TransactionFactory(neighbour=neighbour, admin=admin, total="10.00")
+
+        result = transaction_service.undo_transaction(txn.id, admin)
+
+        assert result.status == Transaction.STATUS_UNDONE
+        assert result.undone_at is not None
+        assert result.undone_by == admin
+
+    def test_undo_creates_balance_log(self):
+        neighbour = NeighbourFactory(balance="50.00")
+        admin = UserFactory()
+        txn = TransactionFactory(neighbour=neighbour, admin=admin, total="25.00")
+
+        transaction_service.undo_transaction(txn.id, admin)
+
+        log = BalanceLog.objects.get(neighbour=neighbour)
+        assert log.amount == Decimal("25.00")
+        assert log.balance_before == Decimal("50.00")
+        assert log.balance_after == Decimal("75.00")
+        assert log.reason == BalanceLog.REASON_UNDO
+        assert log.admin == admin
+
+    def test_undo_already_undone_raises(self):
+        neighbour = NeighbourFactory(balance="50.00")
+        admin = UserFactory()
+        txn = TransactionFactory(neighbour=neighbour, admin=admin, total="10.00")
+
+        transaction_service.undo_transaction(txn.id, admin)
+
+        with pytest.raises(TransactionUndoError, match="already been undone"):
+            transaction_service.undo_transaction(txn.id, admin)
+
+    def test_undo_with_deleted_item_still_refunds(self):
+        neighbour = NeighbourFactory(balance="50.00")
+        admin = UserFactory()
+        item = ItemFactory(stock_count=10)
+        txn = TransactionFactory(neighbour=neighbour, admin=admin, total="20.00")
+        TransactionItemFactory(
+            transaction=txn, item=item, item_name=item.name,
+            unit_cost=Decimal("10.00"), quantity=2, line_total=Decimal("20.00"),
+        )
+        # Simulate item deletion (SET_NULL behavior)
+        from core.models import TransactionItem
+        TransactionItem.objects.filter(transaction=txn).update(item=None)
+
+        transaction_service.undo_transaction(txn.id, admin)
+
+        neighbour.refresh_from_db()
+        assert neighbour.balance == Decimal("70.00")
+        # Stock should not change since item FK is null
+        item.refresh_from_db()
+        assert item.stock_count == 10
