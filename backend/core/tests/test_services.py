@@ -150,6 +150,71 @@ class TestNeighbourService:
         count = neighbour_service.reset_all_balances(admin)
         assert count == 0
 
+    def test_bulk_edit_allergies(self):
+        admin = UserFactory()
+        n1 = NeighbourFactory(allergies=[])
+        n2 = NeighbourFactory(allergies=["Gluten free"])
+        neighbour_service.bulk_edit_neighbours(
+            [n1.id, n2.id], "allergies", ["Lactose free", "Gluten free"], admin
+        )
+        n1.refresh_from_db()
+        n2.refresh_from_db()
+        assert n1.allergies == ["Lactose free", "Gluten free"]
+        assert n2.allergies == ["Lactose free", "Gluten free"]
+
+    def test_bulk_edit_catchment_area(self):
+        admin = UserFactory()
+        n1 = NeighbourFactory(catchment_area=True)
+        n2 = NeighbourFactory(catchment_area=True)
+        neighbour_service.bulk_edit_neighbours(
+            [n1.id, n2.id], "catchment_area", False, admin
+        )
+        n1.refresh_from_db()
+        n2.refresh_from_db()
+        assert n1.catchment_area is False
+        assert n2.catchment_area is False
+
+    def test_bulk_edit_num_adults_valid(self):
+        admin = UserFactory()
+        n1 = NeighbourFactory(num_adults=1)
+        neighbour_service.bulk_edit_neighbours([n1.id], "num_adults", 4, admin)
+        n1.refresh_from_db()
+        assert n1.num_adults == 4
+
+    def test_bulk_edit_num_adults_invalid(self):
+        admin = UserFactory()
+        n1 = NeighbourFactory(num_adults=1)
+        with pytest.raises(ValueError, match="between 1 and 7"):
+            neighbour_service.bulk_edit_neighbours([n1.id], "num_adults", 0, admin)
+
+    def test_bulk_edit_reset_balance(self):
+        admin = UserFactory()
+        n1 = NeighbourFactory(
+            num_adults=1, num_children=0, catchment_area=True, balance="10.00"
+        )
+        n2 = NeighbourFactory(
+            num_adults=2, num_children=1, catchment_area=False, balance="5.00"
+        )
+        count = neighbour_service.bulk_edit_neighbours(
+            [n1.id, n2.id], "reset_balance", None, admin
+        )
+        assert count == 2
+        n1.refresh_from_db()
+        n2.refresh_from_db()
+        assert n1.balance == Decimal("58")
+        assert n2.balance == Decimal("96")
+        assert BalanceLog.objects.filter(reason=BalanceLog.REASON_RESET).count() == 2
+
+    def test_bulk_edit_reset_balance_no_change_no_log(self):
+        admin = UserFactory()
+        NeighbourFactory(
+            num_adults=1, num_children=0, catchment_area=True, balance="58.00"
+        )
+        neighbour_service.bulk_edit_neighbours(
+            [1], "reset_balance", None, admin
+        )
+        assert BalanceLog.objects.filter(reason=BalanceLog.REASON_RESET).count() == 0
+
 
 @pytest.mark.django_db
 class TestCheckoutService:

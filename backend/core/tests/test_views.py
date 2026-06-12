@@ -211,6 +211,42 @@ class TestNeighbourViews:
         response = unauthenticated_client.post("/api/neighbours/reset-balances/")
         assert response.status_code == 403
 
+    def test_bulk_edit_success(self, api_client):
+        n1 = NeighbourFactory(catchment_area=True)
+        n2 = NeighbourFactory(catchment_area=True)
+        response = api_client.post(
+            "/api/neighbours/bulk-edit/",
+            {"ids": [n1.id, n2.id], "action": "catchment_area", "value": False},
+            format="json",
+        )
+        assert response.status_code == 200
+        assert response.data["updated_count"] == 2
+
+    def test_bulk_edit_empty_ids(self, api_client):
+        response = api_client.post(
+            "/api/neighbours/bulk-edit/",
+            {"ids": [], "action": "catchment_area", "value": True},
+            format="json",
+        )
+        assert response.status_code == 400
+
+    def test_bulk_edit_invalid_action(self, api_client):
+        n1 = NeighbourFactory()
+        response = api_client.post(
+            "/api/neighbours/bulk-edit/",
+            {"ids": [n1.id], "action": "invalid_action", "value": True},
+            format="json",
+        )
+        assert response.status_code == 400
+
+    def test_bulk_edit_unauthenticated(self, unauthenticated_client):
+        response = unauthenticated_client.post(
+            "/api/neighbours/bulk-edit/",
+            {"ids": [1], "action": "catchment_area", "value": True},
+            format="json",
+        )
+        assert response.status_code == 403
+
 
 @pytest.mark.django_db
 class TestCartViews:

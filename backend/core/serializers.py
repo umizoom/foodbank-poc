@@ -110,6 +110,16 @@ class NeighbourSerializer(serializers.ModelSerializer):
         return [item.strip() for item in value if item.strip()]
 
 
+class BulkEditSerializer(serializers.Serializer):
+    ids = serializers.ListField(
+        child=serializers.IntegerField(), min_length=1, max_length=200
+    )
+    action = serializers.ChoiceField(
+        choices=["allergies", "catchment_area", "reset_balance", "num_adults", "num_children"]
+    )
+    value = serializers.JSONField(required=False, allow_null=True, default=None)
+
+
 class BalanceAddSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=10, decimal_places=2)
 

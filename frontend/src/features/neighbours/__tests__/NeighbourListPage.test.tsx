@@ -95,4 +95,44 @@ describe('NeighbourListPage', () => {
       expect(screen.getByText(/Successfully reset balances for 2 neighbours/)).toBeInTheDocument();
     });
   });
+
+  it('renders checkboxes on each row', async () => {
+    renderWithProviders(<NeighbourListPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('select-all-checkbox')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('select-row-1')).toBeInTheDocument();
+    expect(screen.getByTestId('select-row-2')).toBeInTheDocument();
+  });
+
+  it('selecting rows shows bulk edit button with count', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<NeighbourListPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('select-row-1')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId('bulk-edit-button')).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId('select-row-1'));
+    await user.click(screen.getByTestId('select-row-2'));
+
+    expect(screen.getByTestId('bulk-edit-button')).toBeInTheDocument();
+    expect(screen.getByTestId('bulk-edit-button')).toHaveTextContent('Bulk Edit (2)');
+  });
+
+  it('select all selects all visible rows', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<NeighbourListPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('select-all-checkbox')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId('select-all-checkbox'));
+
+    expect(screen.getByTestId('bulk-edit-button')).toHaveTextContent('Bulk Edit (2)');
+  });
 });
