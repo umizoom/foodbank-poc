@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from core.models import Cart, Category, Item, Neighbour, Transaction
 from core.serializers import (
     BalanceAddSerializer,
+    BulkEditSerializer,
     CartCreateSerializer,
     CartItemAddSerializer,
     CartItemUpdateSerializer,
@@ -145,6 +146,26 @@ class NeighbourViewSet(viewsets.ModelViewSet):
             admin=request.user,
         )
         return Response(NeighbourSerializer(updated_neighbour).data)
+
+    @action(detail=False, methods=["post"], url_path="reset-balances")
+    def reset_balances(self, request):
+        reset_count = neighbour_service.reset_all_balances(admin=request.user)
+        return Response({"reset_count": reset_count})
+
+    @action(detail=False, methods=["post"], url_path="bulk-edit")
+    def bulk_edit(self, request):
+        serializer = BulkEditSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            count = neighbour_service.bulk_edit_neighbours(
+                ids=serializer.validated_data["ids"],
+                action=serializer.validated_data["action"],
+                value=serializer.validated_data["value"],
+                admin=request.user,
+            )
+        except ValueError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"updated_count": count})
 
 
 class CartViewSet(viewsets.GenericViewSet):

@@ -110,6 +110,15 @@ export const handlers = [
     return HttpResponse.json({ ...mockNeighbours[0], balance: '100.00' });
   }),
 
+  http.post('*/api/neighbours/reset-balances/', () => {
+    return HttpResponse.json({ reset_count: 2 });
+  }),
+
+  http.post('*/api/neighbours/bulk-edit/', async ({ request }) => {
+    const body = (await request.json()) as { ids: number[] };
+    return HttpResponse.json({ updated_count: body.ids.length });
+  }),
+
   // Carts
   http.get('*/api/carts/:id/', () => {
     return HttpResponse.json(mockCart);
