@@ -195,6 +195,10 @@ class TransactionSerializer(serializers.ModelSerializer):
     neighbour_name = serializers.CharField(source="neighbour.name", read_only=True)
     admin_username = serializers.CharField(source="admin.username", read_only=True)
     total_amount = serializers.DecimalField(source="total", max_digits=10, decimal_places=2, read_only=True)
+    undone_by_username = serializers.CharField(
+        source="undone_by.username", read_only=True, default=None
+    )
+    can_undo = serializers.SerializerMethodField()
 
     class Meta:
         model = Transaction
@@ -205,8 +209,15 @@ class TransactionSerializer(serializers.ModelSerializer):
             "admin_username",
             "total_amount",
             "items",
+            "status",
+            "undone_at",
+            "undone_by_username",
+            "can_undo",
             "created_at",
         ]
+
+    def get_can_undo(self, obj):
+        return obj.status == Transaction.STATUS_COMPLETED
 
 
 class TransactionListSerializer(serializers.ModelSerializer):
@@ -217,7 +228,7 @@ class TransactionListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = ["id", "neighbour", "neighbour_name", "admin_username", "total_amount", "item_count", "created_at"]
+        fields = ["id", "neighbour", "neighbour_name", "admin_username", "total_amount", "item_count", "status", "created_at"]
 
 
 class LoginSerializer(serializers.Serializer):

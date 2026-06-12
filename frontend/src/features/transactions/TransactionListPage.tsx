@@ -77,6 +77,19 @@ export function TransactionListPage() {
     { key: 'total', header: 'Total', render: (tx) => <CurrencyDisplay amount={tx.total_amount} /> },
     { key: 'items', header: 'Items', render: (tx) => tx.item_count },
     { key: 'admin', header: 'Processed By', render: (tx) => tx.admin_username },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (tx) => (
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+          tx.status === 'undone'
+            ? 'bg-red-100 text-red-800'
+            : 'bg-green-100 text-green-800'
+        }`}>
+          {tx.status === 'undone' ? 'Undone' : 'Completed'}
+        </span>
+      ),
+    },
   ];
 
   return (

@@ -77,6 +77,10 @@ export interface Transaction {
   admin_username: string;
   total_amount: string;
   items: TransactionItem[];
+  status: 'completed' | 'undone';
+  undone_at: string | null;
+  undone_by_username: string | null;
+  can_undo: boolean;
   created_at: string;
 }
 
@@ -86,6 +90,7 @@ export interface TransactionListItem {
   admin_username: string;
   total_amount: string;
   item_count: number;
+  status: 'completed' | 'undone';
   created_at: string;
 }
 
