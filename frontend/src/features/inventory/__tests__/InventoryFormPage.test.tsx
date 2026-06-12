@@ -21,11 +21,13 @@ describe('InventoryFormPage', () => {
     renderWithProviders(<InventoryFormPage />, { route: '/inventory/new' });
 
     const select = await screen.findByTestId('item-category-select');
-    const options = within(select).getAllByRole('option');
-    const optionTexts = options.map((o) => o.textContent);
 
-    expect(optionTexts).toContain('Dairy');
-    expect(optionTexts).not.toContain('Extras');
+    await waitFor(() => {
+      const options = within(select).getAllByRole('option');
+      const optionTexts = options.map((o) => o.textContent);
+      expect(optionTexts).toContain('Dairy');
+      expect(optionTexts).not.toContain('Extras');
+    });
   });
 
   it('shows validation errors on empty submit', async () => {
