@@ -2,15 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTransactions } from '@/shared/hooks/useTransactions';
 import { useNeighbours } from '@/shared/hooks/useNeighbours';
+import { getPresetDates, type ReportPeriod } from '@/shared/hooks/useReport';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { DataTable, type Column } from '@/shared/components/DataTable';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
 import { Button } from '@/shared/components/Button';
 import type { TransactionListItem } from '@/shared/api/types';
 
+const PRESETS: { label: string; value: Exclude<ReportPeriod, 'custom'> }[] = [
+  { label: 'Daily', value: 'daily' },
+  { label: 'Weekly', value: 'weekly' },
+  { label: 'Monthly', value: 'monthly' },
+];
+
 function getTodayISO() {
   const d = new Date();
-  return d.toISOString().split('T')[0];
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 interface LastRanParams {
@@ -29,11 +39,25 @@ export function TransactionListPage() {
   const [dateFrom, setDateFrom] = useState(todayFilter ? todayISO : '');
   const [dateTo, setDateTo] = useState(todayFilter ? todayISO : '');
   const [neighbourFilter, setNeighbourFilter] = useState<number | undefined>();
+  const [activePreset, setActivePreset] = useState<ReportPeriod | null>(null);
   const [lastRanParams, setLastRanParams] = useState<LastRanParams | null>(null);
 
   const { transactions, loading, runTransactions } = useTransactions();
   const { neighbours } = useNeighbours();
   const autoRanRef = useRef(false);
+
+  const handlePreset = (preset: Exclude<ReportPeriod, 'custom'>) => {
+    const { startDate, endDate } = getPresetDates(preset);
+    setDateFrom(startDate);
+    setDateTo(endDate);
+    setActivePreset(preset);
+  };
+
+  const handleDateChange = (field: 'from' | 'to', value: string) => {
+    if (field === 'from') setDateFrom(value);
+    else setDateTo(value);
+    setActivePreset(null);
+  };
 
   const dateError = dateFrom && dateTo && dateFrom > dateTo
     ? '"From" date must be before "To" date'
@@ -119,13 +143,30 @@ export function TransactionListPage() {
         )}
 
         <div className="flex items-end gap-4 mb-4 flex-wrap">
+          <div className="flex gap-2">
+            {PRESETS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => handlePreset(p.value)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activePreset === p.value
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                data-testid={`period-${p.value}`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
           <div>
             <label className="block text-xs text-gray-500 mb-1">From</label>
             <input
               type="date"
               value={dateFrom}
               max={dateTo || undefined}
-              onChange={(e) => setDateFrom(e.target.value)}
+              onChange={(e) => handleDateChange('from', e.target.value)}
               onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch {} }}
               className="rounded-md border border-gray-300 px-3 py-2 text-base min-h-[44px]"
               data-testid="filter-date-from"
@@ -137,7 +178,7 @@ export function TransactionListPage() {
               type="date"
               value={dateTo}
               min={dateFrom || undefined}
-              onChange={(e) => setDateTo(e.target.value)}
+              onChange={(e) => handleDateChange('to', e.target.value)}
               onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch {} }}
               className="rounded-md border border-gray-300 px-3 py-2 text-base min-h-[44px]"
               data-testid="filter-date-to"
