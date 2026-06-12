@@ -26,6 +26,7 @@ from core.serializers import (
     TransactionSerializer,
 )
 from core.services import auth_service, checkout_service, inventory_service, neighbour_service, report_service
+from core.services.points_service import calculate_starting_balance
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -72,6 +73,14 @@ class NeighbourViewSet(viewsets.ModelViewSet):
     search_fields = ["name", "card_id"]
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
     pagination_class = None
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        starting_balance = calculate_starting_balance(
+            instance.num_adults, instance.num_children, instance.catchment_area
+        )
+        instance.balance = starting_balance
+        instance.save(update_fields=["balance"])
 
     @action(detail=False, methods=["get"], url_path="lookup")
     def lookup_by_card(self, request):

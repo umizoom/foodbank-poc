@@ -52,6 +52,8 @@ class Neighbour(models.Model):
     name = models.CharField(max_length=200)
     card_id = models.CharField(max_length=100, unique=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    num_adults = models.PositiveSmallIntegerField(default=1)
+    num_children = models.PositiveSmallIntegerField(default=0)
     allergies = models.JSONField(default=list, blank=True)
     diaper_size = models.CharField(max_length=50, blank=True, default="")
     catchment_area = models.BooleanField(default=True)
@@ -64,6 +66,14 @@ class Neighbour(models.Model):
         constraints = [
             models.CheckConstraint(
                 check=models.Q(balance__gte=0), name="neighbour_balance_non_negative"
+            ),
+            models.CheckConstraint(
+                check=models.Q(num_adults__gte=1, num_adults__lte=7),
+                name="neighbour_adults_range",
+            ),
+            models.CheckConstraint(
+                check=models.Q(num_children__gte=0, num_children__lte=7),
+                name="neighbour_children_range",
             ),
         ]
 

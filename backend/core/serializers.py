@@ -76,10 +76,21 @@ class NeighbourSerializer(serializers.ModelSerializer):
         model = Neighbour
         fields = [
             "id", "name", "card_id", "balance",
+            "num_adults", "num_children",
             "allergies", "diaper_size", "catchment_area", "notes",
             "created_at", "updated_at",
         ]
         read_only_fields = ["id", "balance", "created_at", "updated_at"]
+
+    def validate_num_adults(self, value):
+        if value < 1 or value > 7:
+            raise serializers.ValidationError("Number of adults must be between 1 and 7.")
+        return value
+
+    def validate_num_children(self, value):
+        if value < 0 or value > 7:
+            raise serializers.ValidationError("Number of children must be between 0 and 7.")
+        return value
 
     def validate_allergies(self, value):
         if not isinstance(value, list):

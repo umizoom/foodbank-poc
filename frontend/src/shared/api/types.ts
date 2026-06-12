@@ -22,6 +22,8 @@ export interface Neighbour {
   name: string;
   card_id: string;
   balance: string;
+  num_adults: number;
+  num_children: number;
   allergies: string[];
   diaper_size: string;
   catchment_area: boolean;

@@ -11,8 +11,18 @@ logger = logging.getLogger("core.security")
 MAX_BALANCE_ADDITION = Decimal("2000.00")
 
 
-def register_neighbour(name, card_id):
-    return Neighbour.objects.create(name=name, card_id=card_id)
+def register_neighbour(name, card_id, num_adults=1, num_children=0, catchment_area=True):
+    from core.services.points_service import calculate_starting_balance
+
+    balance = calculate_starting_balance(num_adults, num_children, catchment_area)
+    return Neighbour.objects.create(
+        name=name,
+        card_id=card_id,
+        num_adults=num_adults,
+        num_children=num_children,
+        catchment_area=catchment_area,
+        balance=balance,
+    )
 
 
 def get_by_card_id(card_id):

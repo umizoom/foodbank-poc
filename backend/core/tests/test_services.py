@@ -72,7 +72,23 @@ class TestNeighbourService:
     def test_register_neighbour(self):
         neighbour = neighbour_service.register_neighbour(name="John", card_id="CARD-999")
         assert neighbour.name == "John"
-        assert neighbour.balance == 0
+        assert neighbour.num_adults == 1
+        assert neighbour.num_children == 0
+        assert neighbour.balance == Decimal("58")
+
+    def test_register_neighbour_with_family_size(self):
+        neighbour = neighbour_service.register_neighbour(
+            name="Jane", card_id="CARD-998", num_adults=2, num_children=3, catchment_area=True
+        )
+        assert neighbour.num_adults == 2
+        assert neighbour.num_children == 3
+        assert neighbour.balance == Decimal("191")
+
+    def test_register_neighbour_out_of_catchment(self):
+        neighbour = neighbour_service.register_neighbour(
+            name="Bob", card_id="CARD-997", num_adults=1, num_children=0, catchment_area=False
+        )
+        assert neighbour.balance == Decimal("41")
 
     def test_get_by_card_id_found(self):
         NeighbourFactory(card_id="RFID-ABC")
