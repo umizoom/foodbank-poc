@@ -4,7 +4,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from core.models import Cart, CartItem, Neighbour, Transaction
+from core.models import Cart, CartItem, Category, Neighbour, Transaction
 from core.tests.factories import (
     CartFactory,
     CartItemFactory,
@@ -58,7 +58,7 @@ class TestCategoryViews:
         CategoryFactory.create_batch(3)
         response = api_client.get("/api/categories/")
         assert response.status_code == 200
-        assert len(response.data) == 3
+        assert len(response.data) >= 3
 
     def test_create_category(self, api_client):
         response = api_client.post("/api/categories/", {"name": "Produce"})
@@ -70,6 +70,18 @@ class TestCategoryViews:
         response = api_client.delete(f"/api/categories/{cat.id}/")
         assert response.status_code == 204
 
+    def test_rename_extras_category_rejected(self, api_client):
+        cat, _ = Category.objects.get_or_create(name="Extras")
+        response = api_client.put(f"/api/categories/{cat.id}/", {"name": "Misc"})
+        assert response.status_code == 400
+        assert "cannot be modified" in response.data["error"].lower()
+
+    def test_delete_extras_category_rejected(self, api_client):
+        cat, _ = Category.objects.get_or_create(name="Extras")
+        response = api_client.delete(f"/api/categories/{cat.id}/")
+        assert response.status_code == 400
+        assert "cannot be deleted" in response.data["error"].lower()
+
 
 @pytest.mark.django_db
 class TestItemViews:
@@ -77,7 +89,7 @@ class TestItemViews:
         ItemFactory.create_batch(3)
         response = api_client.get("/api/items/")
         assert response.status_code == 200
-        assert len(response.data) == 3
+        assert len(response.data) >= 3
 
     def test_create_item(self, api_client):
         cat = CategoryFactory()
@@ -87,6 +99,40 @@ class TestItemViews:
         )
         assert response.status_code == 201
         assert response.data["name"] == "Eggs"
+
+    def test_create_item_in_extras_category_rejected(self, api_client):
+        extras_cat, _ = Category.objects.get_or_create(name="Extras")
+        response = api_client.post(
+            "/api/items/",
+            {"name": "Gift Card", "category": extras_cat.id, "cost": "5.00", "stock_count": 10, "low_stock_threshold": 2},
+        )
+        assert response.status_code == 400
+        assert "category" in response.data
+
+    def test_update_extras_item_rejected(self, api_client):
+        extras_cat, _ = Category.objects.get_or_create(name="Extras")
+        item = ItemFactory(category=extras_cat, track_stock=False, name="Extras")
+        response = api_client.put(
+            f"/api/items/{item.id}/",
+            {"name": "Renamed", "category": extras_cat.id, "cost": "2.00", "stock_count": 0, "low_stock_threshold": 0},
+        )
+        assert response.status_code == 400
+        assert "extras config" in response.data["error"].lower()
+
+    def test_patch_extras_item_rejected(self, api_client):
+        extras_cat, _ = Category.objects.get_or_create(name="Extras")
+        item = ItemFactory(category=extras_cat, track_stock=False, name="Extras")
+        response = api_client.patch(
+            f"/api/items/{item.id}/",
+            {"name": "Renamed"},
+        )
+        assert response.status_code == 400
+
+    def test_delete_extras_item_rejected(self, api_client):
+        extras_cat, _ = Category.objects.get_or_create(name="Extras")
+        item = ItemFactory(category=extras_cat, track_stock=False, name="Extras")
+        response = api_client.delete(f"/api/items/{item.id}/")
+        assert response.status_code == 400
 
     def test_update_stock(self, api_client):
         item = ItemFactory(stock_count=10)

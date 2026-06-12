@@ -151,8 +151,8 @@ class TestCheckoutService:
     def test_remove_from_cart(self):
         cart = CartFactory()
         item = ItemFactory(stock_count=10)
-        checkout_service.add_to_cart(cart.id, item.id, 2)
-        checkout_service.remove_from_cart(cart.id, item.id)
+        cart_item = checkout_service.add_to_cart(cart.id, item.id, 2)
+        checkout_service.remove_from_cart(cart.id, cart_item.id)
         summary = checkout_service.get_cart_summary(cart.id)
         assert len(summary["items"]) == 0
 

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '@/test/utils/render';
 import { InventoryFormPage } from '../InventoryFormPage';
@@ -15,6 +15,19 @@ describe('InventoryFormPage', () => {
     expect(screen.getByTestId('item-cost-input')).toBeInTheDocument();
     expect(screen.getByTestId('item-stock-input')).toBeInTheDocument();
     expect(screen.getByTestId('item-threshold-input')).toBeInTheDocument();
+  });
+
+  it('does not show Extras in the category dropdown', async () => {
+    renderWithProviders(<InventoryFormPage />, { route: '/inventory/new' });
+
+    const select = await screen.findByTestId('item-category-select');
+
+    await waitFor(() => {
+      const options = within(select).getAllByRole('option');
+      const optionTexts = options.map((o) => o.textContent);
+      expect(optionTexts).toContain('Dairy');
+      expect(optionTexts).not.toContain('Extras');
+    });
   });
 
   it('shows validation errors on empty submit', async () => {

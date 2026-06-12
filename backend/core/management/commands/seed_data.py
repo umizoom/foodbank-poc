@@ -106,14 +106,16 @@ class Command(BaseCommand):
             category = Category.objects.get(name=category_name)
             for item_data in items:
                 total_count += 1
+                defaults = {
+                    "cost": item_data["cost"],
+                    "stock_count": item_data["stock_count"],
+                    "low_stock_threshold": item_data.get("low_stock_threshold", 10),
+                    "track_stock": item_data.get("track_stock", True),
+                }
                 _, created = Item.objects.get_or_create(
                     name=item_data["name"],
                     category=category,
-                    defaults={
-                        "cost": item_data["cost"],
-                        "stock_count": item_data["stock_count"],
-                        "low_stock_threshold": 10,
-                    },
+                    defaults=defaults,
                 )
                 if created:
                     created_count += 1

@@ -110,7 +110,7 @@ export function InventoryFormPage() {
               {...props}
             >
               <option value="">Select category</option>
-              {categories.map((cat) => (
+              {categories.filter((cat) => cat.name !== 'Extras').map((cat) => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>

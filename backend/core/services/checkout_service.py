@@ -26,18 +26,27 @@ def get_cart(cart_id):
         raise CartNotFoundError(cart_id)
 
 
-def add_to_cart(cart_id, item_id, quantity):
+def add_to_cart(cart_id, item_id, quantity, unit_cost_override=None):
     cart = _get_cart_or_raise(cart_id)
     item = Item.objects.get(id=item_id)
 
-    if item.stock_count <= 0:
+    if item.track_stock and item.stock_count <= 0:
         raise InsufficientStockError(item.name)
 
-    cart_item, created = CartItem.objects.get_or_create(
-        cart=cart,
-        item=item,
-        defaults={"quantity": quantity},
-    )
+    if unit_cost_override is not None:
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            item=item,
+            unit_cost_override=unit_cost_override,
+            defaults={"quantity": quantity},
+        )
+    else:
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            item=item,
+            unit_cost_override__isnull=True,
+            defaults={"quantity": quantity},
+        )
 
     if not created:
         cart_item.quantity += quantity
@@ -46,19 +55,19 @@ def add_to_cart(cart_id, item_id, quantity):
     return cart_item
 
 
-def remove_from_cart(cart_id, item_id):
+def remove_from_cart(cart_id, cart_item_id):
     cart = _get_cart_or_raise(cart_id)
-    CartItem.objects.filter(cart=cart, item_id=item_id).delete()
+    CartItem.objects.filter(cart=cart, id=cart_item_id).delete()
 
 
-def update_cart_quantity(cart_id, item_id, quantity):
+def update_cart_quantity(cart_id, cart_item_id, quantity):
     cart = _get_cart_or_raise(cart_id)
 
     if quantity <= 0:
-        CartItem.objects.filter(cart=cart, item_id=item_id).delete()
+        CartItem.objects.filter(cart=cart, id=cart_item_id).delete()
         return None
 
-    cart_item = CartItem.objects.get(cart=cart, item_id=item_id)
+    cart_item = CartItem.objects.get(cart=cart, id=cart_item_id)
     cart_item.quantity = quantity
     cart_item.save(update_fields=["quantity"])
     return cart_item
@@ -67,7 +76,7 @@ def update_cart_quantity(cart_id, item_id, quantity):
 def get_cart_summary(cart_id):
     cart = Cart.objects.prefetch_related("items__item").get(id=cart_id)
     cart_items = cart.items.select_related("item").all()
-    total = sum(ci.item.cost * ci.quantity for ci in cart_items)
+    total = sum(ci.line_total for ci in cart_items)
     return {
         "cart": cart,
         "items": cart_items,
@@ -88,16 +97,15 @@ def process_checkout(cart_id):
     if not cart_items.exists():
         raise ValueError("Cart is empty")
 
-    # Re-validate stock
+    # Re-validate stock (only for items that track it)
     for cart_item in cart_items:
-        item = Item.objects.select_for_update().get(id=cart_item.item_id)
-        if item.stock_count < cart_item.quantity:
-            raise InsufficientStockError(item.name)
+        if cart_item.item.track_stock:
+            item = Item.objects.select_for_update().get(id=cart_item.item_id)
+            if item.stock_count < cart_item.quantity:
+                raise InsufficientStockError(item.name)
 
     # Calculate total
-    total = Decimal("0.00")
-    for cart_item in cart_items:
-        total += cart_item.item.cost * cart_item.quantity
+    total = sum((ci.line_total for ci in cart_items), Decimal("0.00"))
 
     # Validate balance
     neighbour = Neighbour.objects.select_for_update().get(id=cart.neighbour_id)
@@ -107,11 +115,12 @@ def process_checkout(cart_id):
     # Deduct balance
     Neighbour.objects.filter(id=neighbour.id).update(balance=F("balance") - total)
 
-    # Decrement stock
+    # Decrement stock (only for items that track it)
     for cart_item in cart_items:
-        Item.objects.filter(id=cart_item.item_id).update(
-            stock_count=F("stock_count") - cart_item.quantity
-        )
+        if cart_item.item.track_stock:
+            Item.objects.filter(id=cart_item.item_id).update(
+                stock_count=F("stock_count") - cart_item.quantity
+            )
 
     # Create transaction record with snapshots
     txn = Transaction.objects.create(
@@ -121,13 +130,14 @@ def process_checkout(cart_id):
     )
 
     for cart_item in cart_items:
+        unit_cost = cart_item.unit_cost_override if cart_item.unit_cost_override is not None else cart_item.item.cost
         TransactionItem.objects.create(
             transaction=txn,
             item=cart_item.item,
             item_name=cart_item.item.name,
-            unit_cost=cart_item.item.cost,
+            unit_cost=unit_cost,
             quantity=cart_item.quantity,
-            line_total=cart_item.item.cost * cart_item.quantity,
+            line_total=unit_cost * cart_item.quantity,
         )
 
     # Delete cart
