@@ -110,6 +110,10 @@ export const handlers = [
     return HttpResponse.json({ ...mockNeighbours[0], balance: '100.00' });
   }),
 
+  http.post('*/api/neighbours/reset-balances/', () => {
+    return HttpResponse.json({ reset_count: 2 });
+  }),
+
   // Carts
   http.get('*/api/carts/:id/', () => {
     return HttpResponse.json(mockCart);

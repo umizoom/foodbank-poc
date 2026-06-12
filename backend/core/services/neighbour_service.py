@@ -40,6 +40,40 @@ def update_neighbour(neighbour, **fields):
 
 
 @transaction.atomic
+def reset_all_balances(admin):
+    from core.services.points_service import calculate_starting_balance
+
+    neighbours = Neighbour.objects.select_for_update().all()
+    logs_to_create = []
+    neighbours_to_update = []
+
+    for neighbour in neighbours:
+        new_balance = calculate_starting_balance(
+            neighbour.num_adults, neighbour.num_children, neighbour.catchment_area
+        )
+        if new_balance != neighbour.balance:
+            logs_to_create.append(
+                BalanceLog(
+                    neighbour=neighbour,
+                    admin=admin,
+                    amount=new_balance - neighbour.balance,
+                    balance_before=neighbour.balance,
+                    balance_after=new_balance,
+                    reason=BalanceLog.REASON_RESET,
+                )
+            )
+        neighbour.balance = new_balance
+        neighbours_to_update.append(neighbour)
+
+    if neighbours_to_update:
+        Neighbour.objects.bulk_update(neighbours_to_update, ["balance"])
+    if logs_to_create:
+        BalanceLog.objects.bulk_create(logs_to_create)
+
+    return len(neighbours_to_update)
+
+
+@transaction.atomic
 def add_balance(neighbour_id, amount, admin):
     amount = Decimal(str(amount))
     if amount <= 0:

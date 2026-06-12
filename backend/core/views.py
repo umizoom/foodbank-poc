@@ -146,6 +146,11 @@ class NeighbourViewSet(viewsets.ModelViewSet):
         )
         return Response(NeighbourSerializer(updated_neighbour).data)
 
+    @action(detail=False, methods=["post"], url_path="reset-balances")
+    def reset_balances(self, request):
+        reset_count = neighbour_service.reset_all_balances(admin=request.user)
+        return Response({"reset_count": reset_count})
+
 
 class CartViewSet(viewsets.GenericViewSet):
     queryset = Cart.objects.prefetch_related("items__item").all()

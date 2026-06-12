@@ -196,6 +196,21 @@ class TestNeighbourViews:
         assert response.status_code == 200
         assert response.data["balance"] == "75.00"
 
+    def test_reset_balances(self, api_client):
+        NeighbourFactory(
+            num_adults=1, num_children=0, catchment_area=True, balance="10.00"
+        )
+        NeighbourFactory(
+            num_adults=2, num_children=1, catchment_area=False, balance="5.00"
+        )
+        response = api_client.post("/api/neighbours/reset-balances/")
+        assert response.status_code == 200
+        assert response.data["reset_count"] == 2
+
+    def test_reset_balances_unauthenticated(self, unauthenticated_client):
+        response = unauthenticated_client.post("/api/neighbours/reset-balances/")
+        assert response.status_code == 403
+
 
 @pytest.mark.django_db
 class TestCartViews:

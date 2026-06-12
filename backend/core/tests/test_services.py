@@ -119,6 +119,37 @@ class TestNeighbourService:
         with pytest.raises(ValueError, match="must be positive"):
             neighbour_service.add_balance(neighbour.id, Decimal("0"), admin)
 
+    def test_reset_all_balances_recalculates(self):
+        admin = UserFactory()
+        n1 = NeighbourFactory(
+            num_adults=1, num_children=0, catchment_area=True, balance="10.00"
+        )
+        n2 = NeighbourFactory(
+            num_adults=2, num_children=1, catchment_area=False, balance="5.00"
+        )
+        count = neighbour_service.reset_all_balances(admin)
+        assert count == 2
+        n1.refresh_from_db()
+        n2.refresh_from_db()
+        assert n1.balance == Decimal("58")
+        assert n2.balance == Decimal("96")
+
+    def test_reset_all_balances_only_logs_changes(self):
+        admin = UserFactory()
+        NeighbourFactory(
+            num_adults=1, num_children=0, catchment_area=True, balance="58.00"
+        )
+        NeighbourFactory(
+            num_adults=2, num_children=1, catchment_area=False, balance="5.00"
+        )
+        neighbour_service.reset_all_balances(admin)
+        assert BalanceLog.objects.filter(reason=BalanceLog.REASON_RESET).count() == 1
+
+    def test_reset_all_balances_empty_db(self):
+        admin = UserFactory()
+        count = neighbour_service.reset_all_balances(admin)
+        assert count == 0
+
 
 @pytest.mark.django_db
 class TestCheckoutService:

@@ -86,9 +86,11 @@ class Neighbour(models.Model):
 class BalanceLog(models.Model):
     REASON_TOPUP = "topup"
     REASON_UNDO = "undo"
+    REASON_RESET = "reset"
     REASON_CHOICES = [
         (REASON_TOPUP, "Top-up"),
         (REASON_UNDO, "Undo"),
+        (REASON_RESET, "Monthly Reset"),
     ]
 
     neighbour = models.ForeignKey(
