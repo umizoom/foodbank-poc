@@ -52,7 +52,7 @@ class Command(BaseCommand):
     def _create_items(self):
         items_by_category = {
             "Dairy": [
-                {"name": "Whole Milk", "cost": Decimal("4.49"), "stock_count": 40},
+                {"name": "Whole Milk", "cost": Decimal("4.49"), "stock_count": 40, "limit_per_checkout": 2},
                 {"name": "Cheddar Cheese", "cost": Decimal("5.99"), "stock_count": 30},
                 {"name": "Greek Yogurt", "cost": Decimal("3.49"), "stock_count": 45},
                 {"name": "Butter", "cost": Decimal("4.99"), "stock_count": 35},
@@ -70,10 +70,10 @@ class Command(BaseCommand):
                 {"name": "Spinach", "cost": Decimal("3.49"), "stock_count": 30},
             ],
             "Proteins": [
-                {"name": "Chicken Breast", "cost": Decimal("8.99"), "stock_count": 25},
-                {"name": "Ground Beef", "cost": Decimal("7.49"), "stock_count": 20},
+                {"name": "Chicken Breast", "cost": Decimal("8.99"), "stock_count": 25, "limit_per_checkout": 2},
+                {"name": "Ground Beef", "cost": Decimal("7.49"), "stock_count": 20, "limit_per_checkout": 2},
                 {"name": "Canned Tuna", "cost": Decimal("2.49"), "stock_count": 50},
-                {"name": "Eggs", "cost": Decimal("4.99"), "stock_count": 40},
+                {"name": "Eggs", "cost": Decimal("4.99"), "stock_count": 40, "limit_per_checkout": 3},
             ],
             "Pantry": [
                 {"name": "Rice", "cost": Decimal("3.99"), "stock_count": 45},
@@ -83,7 +83,7 @@ class Command(BaseCommand):
             ],
             "Beverages": [
                 {"name": "Orange Juice", "cost": Decimal("4.99"), "stock_count": 30},
-                {"name": "Coffee", "cost": Decimal("8.99"), "stock_count": 25},
+                {"name": "Coffee", "cost": Decimal("8.99"), "stock_count": 25, "limit_per_checkout": 1},
                 {"name": "Tea", "cost": Decimal("3.99"), "stock_count": 40},
                 {"name": "Apple Juice", "cost": Decimal("3.49"), "stock_count": 35},
             ],
@@ -111,15 +111,16 @@ class Command(BaseCommand):
                     "stock_count": item_data["stock_count"],
                     "low_stock_threshold": item_data.get("low_stock_threshold", 10),
                     "track_stock": item_data.get("track_stock", True),
+                    "limit_per_checkout": item_data.get("limit_per_checkout"),
                 }
-                _, created = Item.objects.get_or_create(
+                _, created = Item.objects.update_or_create(
                     name=item_data["name"],
                     category=category,
                     defaults=defaults,
                 )
                 if created:
                     created_count += 1
-        self.stdout.write(f"Items: {created_count} created, {total_count - created_count} already existed")
+        self.stdout.write(f"Items: {created_count} created, {total_count - created_count} updated")
 
     def _create_admin(self, password):
         if User.objects.filter(username="admin").exists():

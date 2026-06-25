@@ -6,11 +6,13 @@ import type { CartItem } from '@/shared/api/types';
 interface CartItemRowProps {
   cartItem: CartItem;
   cartId: number;
+  totalQtyForItem: number;
   onUpdate: () => void;
 }
 
-export function CartItemRow({ cartItem, cartId, onUpdate }: CartItemRowProps) {
+export function CartItemRow({ cartItem, cartId, totalQtyForItem, onUpdate }: CartItemRowProps) {
   const [updating, setUpdating] = useState(false);
+  const atLimit = cartItem.item_limit_per_checkout !== null && totalQtyForItem >= cartItem.item_limit_per_checkout;
 
   const handleQuantityChange = async (newQty: number) => {
     if (newQty < 1) {
@@ -64,7 +66,7 @@ export function CartItemRow({ cartItem, cartId, onUpdate }: CartItemRowProps) {
           </span>
           <button
             onClick={() => handleQuantityChange(cartItem.quantity + 1)}
-            disabled={updating}
+            disabled={updating || atLimit}
             className="w-7 h-7 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium disabled:opacity-50"
             data-testid={`qty-increase-${cartItem.item}`}
           >

@@ -24,6 +24,11 @@ export function CartPanel({ cart, neighbourBalance, onCartUpdate, onCheckoutSucc
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const itemTotalQty = cart.items.reduce((acc, ci) => {
+    acc[ci.item] = (acc[ci.item] || 0) + ci.quantity;
+    return acc;
+  }, {} as Record<number, number>);
+
   const handleCheckout = async () => {
     setCheckoutLoading(true);
     setError(null);
@@ -63,6 +68,7 @@ export function CartPanel({ cart, neighbourBalance, onCartUpdate, onCheckoutSucc
                 key={item.id}
                 cartItem={item}
                 cartId={cart.id}
+                totalQtyForItem={itemTotalQty[item.item]}
                 onUpdate={onCartUpdate}
               />
             ))}

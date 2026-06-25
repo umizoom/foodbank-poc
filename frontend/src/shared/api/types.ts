@@ -15,6 +15,7 @@ export interface Item {
   is_low_stock: boolean;
   track_stock: boolean;
   max_cost: number;
+  limit_per_checkout: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -52,6 +53,7 @@ export interface CartItem {
   quantity: number;
   line_total: string;
   unit_cost_override: string | null;
+  item_limit_per_checkout: number | null;
 }
 
 export interface Cart {

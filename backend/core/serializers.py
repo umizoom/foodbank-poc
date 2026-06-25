@@ -40,6 +40,7 @@ class ItemSerializer(serializers.ModelSerializer):
             "is_low_stock",
             "track_stock",
             "max_cost",
+            "limit_per_checkout",
             "created_at",
             "updated_at",
         ]
@@ -66,6 +67,11 @@ class ItemSerializer(serializers.ModelSerializer):
     def validate_low_stock_threshold(self, value):
         if value < 0:
             raise serializers.ValidationError("Threshold cannot be negative.")
+        return value
+
+    def validate_limit_per_checkout(self, value):
+        if value is not None and value < 1:
+            raise serializers.ValidationError("Limit must be at least 1.")
         return value
 
 
@@ -155,11 +161,14 @@ class CartItemSerializer(serializers.ModelSerializer):
     unit_cost_override = serializers.DecimalField(
         max_digits=8, decimal_places=2, read_only=True, allow_null=True
     )
+    item_limit_per_checkout = serializers.IntegerField(
+        source="item.limit_per_checkout", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = CartItem
-        fields = ["id", "item", "item_name", "item_cost", "quantity", "line_total", "unit_cost_override"]
-        read_only_fields = ["id", "item_name", "item_cost", "line_total", "unit_cost_override"]
+        fields = ["id", "item", "item_name", "item_cost", "quantity", "line_total", "unit_cost_override", "item_limit_per_checkout"]
+        read_only_fields = ["id", "item_name", "item_cost", "line_total", "unit_cost_override", "item_limit_per_checkout"]
 
     def get_item_cost(self, obj):
         if obj.unit_cost_override is not None:

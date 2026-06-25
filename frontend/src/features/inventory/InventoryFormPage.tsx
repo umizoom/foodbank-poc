@@ -17,6 +17,7 @@ interface ItemFormData {
   cost: string;
   stock_count: string;
   low_stock_threshold: string;
+  limit_per_checkout: string;
 }
 
 export function InventoryFormPage() {
@@ -35,7 +36,7 @@ export function InventoryFormPage() {
     setError,
     formState: { errors },
   } = useForm<ItemFormData>({
-    defaultValues: { low_stock_threshold: '10' },
+    defaultValues: { low_stock_threshold: '10', limit_per_checkout: '' },
   });
 
   const handleApiError = useFormApiError<ItemFormData>(setError);
@@ -49,6 +50,7 @@ export function InventoryFormPage() {
           cost: item.cost,
           stock_count: String(item.stock_count),
           low_stock_threshold: String(item.low_stock_threshold),
+          limit_per_checkout: item.limit_per_checkout ? String(item.limit_per_checkout) : '',
         });
       });
     }
@@ -64,6 +66,7 @@ export function InventoryFormPage() {
       cost: data.cost,
       stock_count: Number(data.stock_count),
       low_stock_threshold: Number(data.low_stock_threshold),
+      limit_per_checkout: data.limit_per_checkout ? Number(data.limit_per_checkout) : null,
     };
 
     try {
@@ -165,6 +168,27 @@ export function InventoryFormPage() {
               min="0"
               className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               data-testid="item-threshold-input"
+              {...props}
+            />
+          )}
+        </FormField>
+
+        <FormField label="Limit Per Checkout" error={errors.limit_per_checkout?.message}>
+          {(props) => (
+            <input
+              {...register('limit_per_checkout', {
+                validate: (v) => {
+                  if (!v) return true;
+                  const n = Number(v);
+                  if (!Number.isInteger(n) || n < 1) return 'Limit must be a whole number of at least 1';
+                  return true;
+                },
+              })}
+              type="number"
+              min="1"
+              placeholder="No limit"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              data-testid="item-limit-input"
               {...props}
             />
           )}

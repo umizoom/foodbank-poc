@@ -4,10 +4,13 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import F
 
+from django.db.models import Sum
+
 from core.exceptions import (
     CartNotFoundError,
     InsufficientBalanceError,
     InsufficientStockError,
+    ItemLimitExceededError,
 )
 from core.models import Cart, CartItem, Item, Neighbour, Transaction, TransactionItem
 
@@ -32,6 +35,16 @@ def add_to_cart(cart_id, item_id, quantity, unit_cost_override=None):
 
     if item.track_stock and item.stock_count <= 0:
         raise InsufficientStockError(item.name)
+
+    if item.limit_per_checkout is not None:
+        existing_qty = (
+            CartItem.objects.filter(cart=cart, item=item).aggregate(
+                total=Sum("quantity")
+            )["total"]
+            or 0
+        )
+        if existing_qty + quantity > item.limit_per_checkout:
+            raise ItemLimitExceededError(item.name, item.limit_per_checkout)
 
     if unit_cost_override is not None:
         cart_item, created = CartItem.objects.get_or_create(
@@ -67,7 +80,20 @@ def update_cart_quantity(cart_id, cart_item_id, quantity):
         CartItem.objects.filter(cart=cart, id=cart_item_id).delete()
         return None
 
-    cart_item = CartItem.objects.get(cart=cart, id=cart_item_id)
+    cart_item = CartItem.objects.select_related("item").get(cart=cart, id=cart_item_id)
+
+    if cart_item.item.limit_per_checkout is not None:
+        other_qty = (
+            CartItem.objects.filter(cart=cart, item=cart_item.item)
+            .exclude(id=cart_item_id)
+            .aggregate(total=Sum("quantity"))["total"]
+            or 0
+        )
+        if other_qty + quantity > cart_item.item.limit_per_checkout:
+            raise ItemLimitExceededError(
+                cart_item.item.name, cart_item.item.limit_per_checkout
+            )
+
     cart_item.quantity = quantity
     cart_item.save(update_fields=["quantity"])
     return cart_item
