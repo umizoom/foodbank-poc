@@ -31,9 +31,10 @@ export function LoginForm() {
     } catch (e) {
       if (e instanceof ApiError) {
         const errors = e.data?.non_field_errors as string[] | undefined;
-        const detail = e.data?.detail as string[] | undefined;
+        const detail = e.data?.detail;
+        const detailMsg = Array.isArray(detail) ? detail[0] : (typeof detail === 'string' ? detail : undefined);
         const error = e.data?.error as string | undefined;
-        setError(errors?.[0] || detail?.[0] || error || 'Invalid Credentials');
+        setError(errors?.[0] || detailMsg || error || 'Invalid Credentials');
       } else {
         setError('Unable to connect to server');
       }

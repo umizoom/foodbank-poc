@@ -6,6 +6,7 @@ interface RunTransactionsParams {
   dateFrom?: string;
   dateTo?: string;
   neighbour?: number;
+  onetime?: boolean;
   today?: boolean;
 }
 
@@ -19,6 +20,7 @@ export function useTransactions() {
     if (params?.dateFrom) query.set('date_from', params.dateFrom);
     if (params?.dateTo) query.set('date_to', params.dateTo);
     if (params?.neighbour) query.set('neighbour', String(params.neighbour));
+    if (params?.onetime) query.set('onetime', 'true');
     if (params?.today) query.set('today', 'true');
 
     const queryString = query.toString();

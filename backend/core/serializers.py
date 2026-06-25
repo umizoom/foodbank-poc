@@ -91,12 +91,12 @@ class NeighbourSerializer(serializers.ModelSerializer):
     class Meta:
         model = Neighbour
         fields = [
-            "id", "name", "card_id", "balance",
+            "id", "name", "card_id", "balance", "is_onetime",
             "num_adults", "num_children",
             "allergies", "diaper_size", "catchment_area", "notes",
             "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "balance", "created_at", "updated_at"]
+        read_only_fields = ["id", "balance", "is_onetime", "created_at", "updated_at"]
 
     def validate_num_adults(self, value):
         if value < 1 or value > 7:
@@ -114,6 +114,17 @@ class NeighbourSerializer(serializers.ModelSerializer):
         if not all(isinstance(item, str) for item in value):
             raise serializers.ValidationError("Each allergy must be a string.")
         return [item.strip() for item in value if item.strip()]
+
+
+class OnetimeCheckoutSerializer(serializers.Serializer):
+    num_adults = serializers.IntegerField(min_value=1, max_value=7)
+    num_children = serializers.IntegerField(min_value=0, max_value=7)
+    balance = serializers.DecimalField(max_digits=10, decimal_places=2)
+
+    def validate_balance(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Balance must be positive.")
+        return value
 
 
 class BulkEditSerializer(serializers.Serializer):
@@ -236,6 +247,7 @@ class TransactionItemSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     items = TransactionItemSerializer(many=True, read_only=True)
     neighbour_name = serializers.CharField(source="neighbour.name", read_only=True)
+    is_onetime = serializers.BooleanField(source="neighbour.is_onetime", read_only=True)
     admin_username = serializers.CharField(source="admin.username", read_only=True)
     total_amount = serializers.DecimalField(source="total", max_digits=10, decimal_places=2, read_only=True)
     undone_by_username = serializers.CharField(
@@ -249,6 +261,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             "id",
             "neighbour",
             "neighbour_name",
+            "is_onetime",
             "admin_username",
             "total_amount",
             "items",
@@ -265,13 +278,14 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 class TransactionListSerializer(serializers.ModelSerializer):
     neighbour_name = serializers.CharField(source="neighbour.name", read_only=True)
+    is_onetime = serializers.BooleanField(source="neighbour.is_onetime", read_only=True)
     admin_username = serializers.CharField(source="admin.username", read_only=True)
     total_amount = serializers.DecimalField(source="total", max_digits=10, decimal_places=2, read_only=True)
     item_count = serializers.IntegerField(source="items.count", read_only=True)
 
     class Meta:
         model = Transaction
-        fields = ["id", "neighbour", "neighbour_name", "admin_username", "total_amount", "item_count", "status", "created_at"]
+        fields = ["id", "neighbour", "neighbour_name", "is_onetime", "admin_username", "total_amount", "item_count", "status", "created_at"]
 
 
 class LoginSerializer(serializers.Serializer):

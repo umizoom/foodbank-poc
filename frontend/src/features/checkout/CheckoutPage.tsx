@@ -1,14 +1,16 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/shared/api/client';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { Button } from '@/shared/components/Button';
 import { CardSimulator } from './CardSimulator';
+import { OnetimeCheckoutForm } from './OnetimeCheckoutForm';
 import { NeighbourBanner } from './NeighbourBanner';
 import { ItemBrowser } from './ItemBrowser';
 import { CartPanel } from './CartPanel';
 import { CheckoutResult } from './CheckoutResult';
 import type { Neighbour, Cart, Transaction } from '@/shared/api/types';
 
-type Phase = 'identify' | 'cart' | 'result';
+type Phase = 'identify' | 'onetime' | 'cart' | 'result';
 
 export function CheckoutPage() {
   const [phase, setPhase] = useState<Phase>('identify');
@@ -53,7 +55,24 @@ export function CheckoutPage() {
     <div>
       <PageHeader title="Checkout" />
 
-      {phase === 'identify' && <CardSimulator onNeighbourIdentified={handleNeighbourIdentified} />}
+      {phase === 'identify' && (
+        <>
+          <CardSimulator onNeighbourIdentified={handleNeighbourIdentified} />
+          <div className="max-w-md mx-auto mt-4 text-center">
+            <p className="text-sm text-gray-400 mb-3">— or —</p>
+            <Button variant="secondary" onClick={() => setPhase('onetime')}>
+              One-Time Courtesy Checkout
+            </Button>
+          </div>
+        </>
+      )}
+
+      {phase === 'onetime' && (
+        <OnetimeCheckoutForm
+          onNeighbourIdentified={handleNeighbourIdentified}
+          onCancel={() => setPhase('identify')}
+        />
+      )}
 
       {phase === 'cart' && neighbour && cart && (
         <>

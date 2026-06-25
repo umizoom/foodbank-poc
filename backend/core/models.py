@@ -58,8 +58,9 @@ class Item(models.Model):
 
 class Neighbour(models.Model):
     name = models.CharField(max_length=200)
-    card_id = models.CharField(max_length=100, unique=True)
+    card_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_onetime = models.BooleanField(default=False)
     num_adults = models.PositiveSmallIntegerField(default=1)
     num_children = models.PositiveSmallIntegerField(default=0)
     allergies = models.JSONField(default=list, blank=True)

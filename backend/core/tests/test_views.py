@@ -249,6 +249,74 @@ class TestNeighbourViews:
 
 
 @pytest.mark.django_db
+class TestOnetimeCheckoutViews:
+    def test_onetime_checkout_creates_neighbour_and_cart(self, api_client):
+        response = api_client.post(
+            "/api/neighbours/onetime-checkout/",
+            {"num_adults": 2, "num_children": 1, "balance": "50.00"},
+            format="json",
+        )
+        assert response.status_code == 201
+        assert response.data["neighbour"]["is_onetime"] is True
+        assert response.data["neighbour"]["name"] == "Courtesy Checkout #1"
+        assert response.data["neighbour"]["card_id"] is None
+        assert response.data["cart"]["neighbour"] == response.data["neighbour"]["id"]
+
+    def test_onetime_checkout_validation_balance_zero(self, api_client):
+        response = api_client.post(
+            "/api/neighbours/onetime-checkout/",
+            {"num_adults": 1, "num_children": 0, "balance": "0.00"},
+            format="json",
+        )
+        assert response.status_code == 400
+
+    def test_onetime_checkout_validation_adults_zero(self, api_client):
+        response = api_client.post(
+            "/api/neighbours/onetime-checkout/",
+            {"num_adults": 0, "num_children": 0, "balance": "50.00"},
+            format="json",
+        )
+        assert response.status_code == 400
+
+    def test_onetime_neighbours_excluded_from_list(self, api_client):
+        NeighbourFactory()
+        from core.services import checkout_service
+        checkout_service.create_onetime_neighbour(1, 0, 50)
+
+        response = api_client.get("/api/neighbours/")
+        assert response.status_code == 200
+        assert all(n["is_onetime"] is False for n in response.data)
+
+    def test_onetime_checkout_unauthenticated(self, unauthenticated_client):
+        response = unauthenticated_client.post(
+            "/api/neighbours/onetime-checkout/",
+            {"num_adults": 1, "num_children": 0, "balance": "50.00"},
+            format="json",
+        )
+        assert response.status_code == 403
+
+    def test_transactions_filter_onetime(self, api_client, admin_user):
+        regular_neighbour = NeighbourFactory(balance="100.00")
+        from core.services import checkout_service
+        onetime_neighbour = checkout_service.create_onetime_neighbour(1, 0, 100)
+
+        # Create transactions for both
+        TransactionFactory(neighbour=regular_neighbour, admin=admin_user, total="10.00")
+        TransactionFactory(neighbour=onetime_neighbour, admin=admin_user, total="20.00")
+
+        response = api_client.get("/api/transactions/?onetime=true")
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["is_onetime"] is True
+
+    def test_transactions_list_includes_is_onetime_field(self, api_client, admin_user):
+        TransactionFactory(admin=admin_user, total="10.00")
+        response = api_client.get("/api/transactions/")
+        assert response.status_code == 200
+        assert "is_onetime" in response.data[0]
+
+
+@pytest.mark.django_db
 class TestCartViews:
     def test_create_cart(self, api_client):
         neighbour = NeighbourFactory()

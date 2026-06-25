@@ -50,7 +50,7 @@ export function NeighbourFormPage() {
       api.get<Neighbour>(`/api/neighbours/${id}/`).then((neighbour) => {
         reset({
           name: neighbour.name,
-          card_id: neighbour.card_id,
+          card_id: neighbour.card_id ?? '',
           num_adults: neighbour.num_adults,
           num_children: neighbour.num_children,
           allergies: neighbour.allergies,

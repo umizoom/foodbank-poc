@@ -11,8 +11,8 @@ export function NeighbourBanner({ neighbour, cart }: NeighbourBannerProps) {
   const cartTotal = parseFloat(cart.total);
   const remaining = balance - cartTotal;
   const isOverBudget = remaining < 0;
-  const hasNeighbourInfo = neighbour.allergies.length > 0 || neighbour.diaper_size || !neighbour.catchment_area;
-  const hasNotes = neighbour.notes && neighbour.notes.trim().length > 0;
+  const hasNeighbourInfo = !neighbour.is_onetime && (neighbour.allergies.length > 0 || neighbour.diaper_size || !neighbour.catchment_area);
+  const hasNotes = !neighbour.is_onetime && neighbour.notes && neighbour.notes.trim().length > 0;
 
   return (
     <div className="bg-white rounded-lg shadow-sm" data-testid="neighbour-banner">
@@ -20,6 +20,11 @@ export function NeighbourBanner({ neighbour, cart }: NeighbourBannerProps) {
         <div>
           <span className="text-sm text-gray-500">Neighbour:</span>
           <span className="ml-2 font-semibold text-gray-900">{neighbour.name}</span>
+          {neighbour.is_onetime && (
+            <span className="ml-2 bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">
+              Courtesy
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-6">
           <div>

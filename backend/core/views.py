@@ -22,6 +22,7 @@ from core.serializers import (
     ItemSerializer,
     LoginSerializer,
     NeighbourSerializer,
+    OnetimeCheckoutSerializer,
     StockUpdateSerializer,
     TransactionListSerializer,
     TransactionSerializer,
@@ -111,6 +112,9 @@ class NeighbourViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
     pagination_class = None
 
+    def get_queryset(self):
+        return Neighbour.objects.filter(is_onetime=False)
+
     def perform_create(self, serializer):
         instance = serializer.save()
         starting_balance = calculate_starting_balance(
@@ -166,6 +170,21 @@ class NeighbourViewSet(viewsets.ModelViewSet):
         except ValueError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"updated_count": count})
+
+    @action(detail=False, methods=["post"], url_path="onetime-checkout")
+    def onetime_checkout(self, request):
+        serializer = OnetimeCheckoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        neighbour = checkout_service.create_onetime_neighbour(
+            num_adults=serializer.validated_data["num_adults"],
+            num_children=serializer.validated_data["num_children"],
+            balance=serializer.validated_data["balance"],
+        )
+        cart = checkout_service.create_cart(neighbour_id=neighbour.id, admin=request.user)
+        return Response({
+            "neighbour": NeighbourSerializer(neighbour).data,
+            "cart": CartSerializer(cart).data,
+        }, status=status.HTTP_201_CREATED)
 
 
 class CartViewSet(viewsets.GenericViewSet):
@@ -262,6 +281,8 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
                 qs = qs.filter(created_at__date__gte=date_from)
             if date_to:
                 qs = qs.filter(created_at__date__lte=date_to)
+        if params.get("onetime") == "true":
+            qs = qs.filter(neighbour__is_onetime=True)
         return qs
 
     def get_serializer_class(self):

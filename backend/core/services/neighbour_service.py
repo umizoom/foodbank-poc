@@ -43,7 +43,7 @@ def update_neighbour(neighbour, **fields):
 def reset_all_balances(admin):
     from core.services.points_service import calculate_starting_balance
 
-    neighbours = Neighbour.objects.select_for_update().all()
+    neighbours = Neighbour.objects.select_for_update().filter(is_onetime=False)
     logs_to_create = []
     neighbours_to_update = []
 
@@ -77,7 +77,7 @@ def reset_all_balances(admin):
 def bulk_edit_neighbours(ids, action, value, admin):
     from core.services.points_service import calculate_starting_balance
 
-    neighbours = Neighbour.objects.select_for_update().filter(id__in=ids)
+    neighbours = Neighbour.objects.select_for_update().filter(id__in=ids, is_onetime=False)
     count = neighbours.count()
 
     if action == "allergies":
