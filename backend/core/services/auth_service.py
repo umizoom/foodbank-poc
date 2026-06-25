@@ -9,7 +9,7 @@ from core.models import LoginAttempt
 
 logger = logging.getLogger("core.security")
 
-LOCKOUT_THRESHOLD = 15
+LOCKOUT_THRESHOLD = 5
 LOCKOUT_DURATION = timedelta(minutes=15)
 
 
