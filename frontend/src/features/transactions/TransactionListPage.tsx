@@ -26,7 +26,7 @@ function getTodayISO() {
 interface LastRanParams {
   dateFrom: string;
   dateTo: string;
-  neighbour: number | undefined;
+  neighbour: string;
   today: boolean;
 }
 
@@ -38,7 +38,7 @@ export function TransactionListPage() {
 
   const [dateFrom, setDateFrom] = useState(todayFilter ? todayISO : '');
   const [dateTo, setDateTo] = useState(todayFilter ? todayISO : '');
-  const [neighbourFilter, setNeighbourFilter] = useState<number | undefined>();
+  const [neighbourFilter, setNeighbourFilter] = useState<string>('');
   const [activePreset, setActivePreset] = useState<ReportPeriod | null>(null);
   const [lastRanParams, setLastRanParams] = useState<LastRanParams | null>(null);
 
@@ -75,7 +75,8 @@ export function TransactionListPage() {
     const params = {
       dateFrom: todayFilter ? undefined : (dateFrom || undefined),
       dateTo: todayFilter ? undefined : (dateTo || undefined),
-      neighbour: neighbourFilter,
+      neighbour: neighbourFilter && neighbourFilter !== 'courtesy' ? Number(neighbourFilter) : undefined,
+      onetime: neighbourFilter === 'courtesy' || undefined,
       today: todayFilter || undefined,
     };
     runTransactions(params);
@@ -97,7 +98,20 @@ export function TransactionListPage() {
       header: 'Date/Time',
       render: (tx) => new Date(tx.created_at).toLocaleString(),
     },
-    { key: 'neighbour', header: 'Neighbour', render: (tx) => tx.neighbour_name },
+    {
+      key: 'neighbour',
+      header: 'Neighbour',
+      render: (tx) => (
+        <span className="flex items-center gap-2">
+          {tx.neighbour_name}
+          {tx.is_onetime && (
+            <span className="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-xs font-medium">
+              Courtesy
+            </span>
+          )}
+        </span>
+      ),
+    },
     { key: 'total', header: 'Total', render: (tx) => <CurrencyDisplay amount={tx.total_amount} /> },
     { key: 'items', header: 'Items', render: (tx) => tx.item_count },
     { key: 'admin', header: 'Processed By', render: (tx) => tx.admin_username },
@@ -187,12 +201,13 @@ export function TransactionListPage() {
           <div>
             <label className="block text-xs text-gray-500 mb-1">Neighbour</label>
             <select
-              value={neighbourFilter ?? ''}
-              onChange={(e) => setNeighbourFilter(e.target.value ? Number(e.target.value) : undefined)}
+              value={neighbourFilter}
+              onChange={(e) => setNeighbourFilter(e.target.value)}
               className="rounded-md border border-gray-300 px-3 py-2 text-base min-h-[44px]"
               data-testid="filter-neighbour"
             >
               <option value="">All Neighbours</option>
+              <option value="courtesy">All Courtesy</option>
               {neighbours.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}

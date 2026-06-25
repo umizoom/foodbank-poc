@@ -23,8 +23,9 @@ export interface Item {
 export interface Neighbour {
   id: number;
   name: string;
-  card_id: string;
+  card_id: string | null;
   balance: string;
+  is_onetime: boolean;
   num_adults: number;
   num_children: number;
   allergies: string[];
@@ -79,6 +80,7 @@ export interface Transaction {
   id: number;
   neighbour: number;
   neighbour_name: string;
+  is_onetime: boolean;
   admin_username: string;
   total_amount: string;
   items: TransactionItem[];
@@ -92,6 +94,7 @@ export interface Transaction {
 export interface TransactionListItem {
   id: number;
   neighbour_name: string;
+  is_onetime: boolean;
   admin_username: string;
   total_amount: string;
   item_count: number;

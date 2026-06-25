@@ -81,7 +81,14 @@ export function DashboardPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {new Date(tx.created_at).toLocaleTimeString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{tx.neighbour_name}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {tx.neighbour_name}
+                      {tx.is_onetime && (
+                        <span className="ml-2 bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                          Courtesy
+                        </span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-sm">
                       <CurrencyDisplay amount={tx.total_amount} />
                     </td>

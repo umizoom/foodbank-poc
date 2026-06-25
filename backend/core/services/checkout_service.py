@@ -17,6 +17,20 @@ from core.models import Cart, CartItem, Item, Neighbour, Transaction, Transactio
 logger = logging.getLogger("core.security")
 
 
+def create_onetime_neighbour(num_adults, num_children, balance):
+    count = Neighbour.objects.filter(is_onetime=True).count() + 1
+    neighbour = Neighbour.objects.create(
+        name=f"Courtesy Checkout #{count}",
+        card_id=None,
+        is_onetime=True,
+        num_adults=num_adults,
+        num_children=num_children,
+        balance=balance,
+        catchment_area=False,
+    )
+    return neighbour
+
+
 def create_cart(neighbour_id, admin):
     neighbour = Neighbour.objects.get(id=neighbour_id)
     return Cart.objects.create(neighbour=neighbour, admin=admin)

@@ -119,6 +119,37 @@ export const handlers = [
     return HttpResponse.json({ updated_count: body.ids.length });
   }),
 
+  http.post('*/api/neighbours/onetime-checkout/', async ({ request }) => {
+    const body = (await request.json()) as { num_adults: number; num_children: number; balance: string };
+    return HttpResponse.json({
+      neighbour: {
+        id: 100,
+        name: 'Courtesy Checkout #1',
+        card_id: null,
+        balance: body.balance,
+        is_onetime: true,
+        num_adults: body.num_adults,
+        num_children: body.num_children,
+        allergies: [],
+        diaper_size: '',
+        catchment_area: false,
+        notes: '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      cart: {
+        id: 99,
+        neighbour: 100,
+        neighbour_name: 'Courtesy Checkout #1',
+        neighbour_balance: body.balance,
+        status: 'open',
+        items: [],
+        total: '0',
+        created_at: new Date().toISOString(),
+      },
+    }, { status: 201 });
+  }),
+
   // Carts
   http.get('*/api/carts/:id/', () => {
     return HttpResponse.json(mockCart);

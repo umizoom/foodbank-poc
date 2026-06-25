@@ -348,6 +348,68 @@ class TestCheckoutService:
 
 
 @pytest.mark.django_db
+class TestOnetimeCheckoutService:
+    def test_create_onetime_neighbour(self):
+        neighbour = checkout_service.create_onetime_neighbour(
+            num_adults=2, num_children=1, balance=Decimal("50.00")
+        )
+        assert neighbour.is_onetime is True
+        assert neighbour.card_id is None
+        assert neighbour.name == "Courtesy Checkout #1"
+        assert neighbour.num_adults == 2
+        assert neighbour.num_children == 1
+        assert neighbour.balance == Decimal("50.00")
+
+    def test_create_onetime_neighbour_sequential_naming(self):
+        checkout_service.create_onetime_neighbour(1, 0, Decimal("30.00"))
+        checkout_service.create_onetime_neighbour(2, 1, Decimal("40.00"))
+        n3 = checkout_service.create_onetime_neighbour(1, 2, Decimal("50.00"))
+        assert n3.name == "Courtesy Checkout #3"
+
+    def test_onetime_neighbour_excluded_from_reset(self):
+        admin = UserFactory()
+        regular = NeighbourFactory(
+            num_adults=1, num_children=0, catchment_area=True, balance="10.00"
+        )
+        onetime = checkout_service.create_onetime_neighbour(1, 0, Decimal("99.00"))
+
+        neighbour_service.reset_all_balances(admin)
+
+        regular.refresh_from_db()
+        onetime.refresh_from_db()
+        assert regular.balance == Decimal("58")
+        assert onetime.balance == Decimal("99.00")
+
+    def test_onetime_neighbour_excluded_from_bulk_edit(self):
+        admin = UserFactory()
+        regular = NeighbourFactory(catchment_area=True)
+        onetime = checkout_service.create_onetime_neighbour(1, 0, Decimal("50.00"))
+
+        count = neighbour_service.bulk_edit_neighbours(
+            [regular.id, onetime.id], "catchment_area", False, admin
+        )
+        assert count == 1
+        regular.refresh_from_db()
+        onetime.refresh_from_db()
+        assert regular.catchment_area is False
+        assert onetime.catchment_area is False  # was already False from creation
+
+    def test_onetime_checkout_full_flow(self):
+        admin = UserFactory()
+        neighbour = checkout_service.create_onetime_neighbour(2, 1, Decimal("100.00"))
+        cart = checkout_service.create_cart(neighbour.id, admin)
+        item = ItemFactory(cost="10.00", stock_count=20)
+        checkout_service.add_to_cart(cart.id, item.id, 3)
+
+        txn = checkout_service.process_checkout(cart.id)
+
+        assert txn.total == Decimal("30.00")
+        neighbour.refresh_from_db()
+        assert neighbour.balance == Decimal("70.00")
+        assert txn.neighbour.is_onetime is True
+
+
+@pytest.mark.django_db
 class TestReportService:
     def test_empty_report(self):
         today = timezone.localdate()
