@@ -24,6 +24,7 @@ class Item(models.Model):
     low_stock_threshold = models.IntegerField(default=10)
     track_stock = models.BooleanField(default=True)
     max_cost = models.PositiveIntegerField(default=5)
+    limit_per_checkout = models.PositiveIntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -39,6 +40,11 @@ class Item(models.Model):
             models.CheckConstraint(
                 check=models.Q(low_stock_threshold__gte=0),
                 name="item_threshold_non_negative",
+            ),
+            models.CheckConstraint(
+                check=models.Q(limit_per_checkout__isnull=True)
+                | models.Q(limit_per_checkout__gte=1),
+                name="item_limit_per_checkout_min_one",
             ),
         ]
 

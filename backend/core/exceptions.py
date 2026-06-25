@@ -26,6 +26,13 @@ class AccountLockedError(Exception):
         super().__init__(f"Account locked: {username}")
 
 
+class ItemLimitExceededError(Exception):
+    def __init__(self, item_name, limit):
+        self.item_name = item_name
+        self.limit = limit
+        super().__init__(f"Limit of {limit} per checkout exceeded for item: {item_name}")
+
+
 class CartNotFoundError(Exception):
     def __init__(self, cart_id):
         self.cart_id = cart_id
@@ -60,6 +67,12 @@ def global_exception_handler(exc, context):
         return Response(
             {"error": "Account locked", "detail": "Too many failed login attempts. Try again later."},
             status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if isinstance(exc, ItemLimitExceededError):
+        return Response(
+            {"error": "Item limit exceeded", "detail": str(exc)},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     if isinstance(exc, CartNotFoundError):

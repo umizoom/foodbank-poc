@@ -4,15 +4,16 @@ import { Button } from '@/shared/components/Button';
 import { CurrencyDisplay } from '@/shared/components/CurrencyDisplay';
 import { LowStockIndicator } from '@/features/inventory/LowStockIndicator';
 import { ExtrasPointsModal } from './ExtrasPointsModal';
-import type { Item } from '@/shared/api/types';
+import type { Item, CartItem } from '@/shared/api/types';
 
 interface ItemCardProps {
   item: Item;
   cartId: number;
+  cartItems: CartItem[];
   onAdded: () => void;
 }
 
-export function ItemCard({ item, cartId, onAdded }: ItemCardProps) {
+export function ItemCard({ item, cartId, cartItems, onAdded }: ItemCardProps) {
   const [loading, setLoading] = useState(false);
   const [showExtrasModal, setShowExtrasModal] = useState(false);
 
@@ -33,6 +34,10 @@ export function ItemCard({ item, cartId, onAdded }: ItemCardProps) {
   };
 
   const outOfStock = item.track_stock && item.stock_count === 0;
+  const currentQtyInCart = cartItems
+    .filter((ci) => ci.item === item.id)
+    .reduce((sum, ci) => sum + ci.quantity, 0);
+  const atLimit = item.limit_per_checkout !== null && currentQtyInCart >= item.limit_per_checkout;
 
   return (
     <>
@@ -53,16 +58,19 @@ export function ItemCard({ item, cartId, onAdded }: ItemCardProps) {
             ) : (
               <span className="text-sm text-indigo-600 font-medium">{`$1-$${item.max_cost}`}</span>
             )}
+            {item.limit_per_checkout !== null && (
+              <span className="text-xs text-amber-600">Max {item.limit_per_checkout}</span>
+            )}
           </div>
         </div>
         <Button
           size="sm"
           onClick={handleAdd}
-          disabled={outOfStock}
+          disabled={outOfStock || atLimit}
           loading={loading}
           data-testid={`add-to-cart-${item.id}`}
         >
-          Add
+          {atLimit ? 'Limit reached' : 'Add'}
         </Button>
       </div>
       <ExtrasPointsModal

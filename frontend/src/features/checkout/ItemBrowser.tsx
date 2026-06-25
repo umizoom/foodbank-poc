@@ -31,7 +31,7 @@ export function ItemBrowser({ cart, onCartUpdate }: ItemBrowserProps) {
       <SpinnerOverlay loading={loading}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto" data-testid="item-browser-grid">
           {items.map((item) => (
-            <ItemCard key={item.id} item={item} cartId={cart.id} onAdded={onCartUpdate} />
+            <ItemCard key={item.id} item={item} cartId={cart.id} cartItems={cart.items} onAdded={onCartUpdate} />
           ))}
           {items.length === 0 && !loading && (
             <p className="text-gray-500 text-sm col-span-2 text-center py-8">No items found.</p>

@@ -9,6 +9,7 @@ from core.exceptions import (
     CartNotFoundError,
     InsufficientBalanceError,
     InsufficientStockError,
+    ItemLimitExceededError,
     TransactionUndoError,
 )
 from core.models import BalanceLog, Transaction
@@ -295,6 +296,55 @@ class TestCheckoutService:
         checkout_service.cancel_cart(cart.id)
         with pytest.raises(CartNotFoundError):
             checkout_service.get_cart(cart.id)
+
+    def test_add_to_cart_within_limit(self):
+        cart = CartFactory()
+        item = ItemFactory(stock_count=10, limit_per_checkout=3)
+        cart_item = checkout_service.add_to_cart(cart.id, item.id, 2)
+        assert cart_item.quantity == 2
+
+    def test_add_to_cart_at_exact_limit(self):
+        cart = CartFactory()
+        item = ItemFactory(stock_count=10, limit_per_checkout=3)
+        checkout_service.add_to_cart(cart.id, item.id, 2)
+        cart_item = checkout_service.add_to_cart(cart.id, item.id, 1)
+        assert cart_item.quantity == 3
+
+    def test_add_to_cart_exceeds_limit(self):
+        cart = CartFactory()
+        item = ItemFactory(stock_count=10, limit_per_checkout=2)
+        checkout_service.add_to_cart(cart.id, item.id, 2)
+        with pytest.raises(ItemLimitExceededError):
+            checkout_service.add_to_cart(cart.id, item.id, 1)
+
+    def test_add_to_cart_no_limit(self):
+        cart = CartFactory()
+        item = ItemFactory(stock_count=50, limit_per_checkout=None)
+        checkout_service.add_to_cart(cart.id, item.id, 10)
+        cart_item = checkout_service.add_to_cart(cart.id, item.id, 10)
+        assert cart_item.quantity == 20
+
+    def test_update_cart_quantity_within_limit(self):
+        cart = CartFactory()
+        item = ItemFactory(stock_count=10, limit_per_checkout=5)
+        cart_item = checkout_service.add_to_cart(cart.id, item.id, 2)
+        result = checkout_service.update_cart_quantity(cart.id, cart_item.id, 4)
+        assert result.quantity == 4
+
+    def test_update_cart_quantity_exceeds_limit(self):
+        cart = CartFactory()
+        item = ItemFactory(stock_count=10, limit_per_checkout=3)
+        cart_item = checkout_service.add_to_cart(cart.id, item.id, 2)
+        with pytest.raises(ItemLimitExceededError):
+            checkout_service.update_cart_quantity(cart.id, cart_item.id, 4)
+
+    def test_limit_aggregates_across_extras_rows(self):
+        cart = CartFactory()
+        item = ItemFactory(stock_count=10, limit_per_checkout=3, track_stock=False)
+        checkout_service.add_to_cart(cart.id, item.id, 1, unit_cost_override=Decimal("2.00"))
+        checkout_service.add_to_cart(cart.id, item.id, 1, unit_cost_override=Decimal("3.00"))
+        with pytest.raises(ItemLimitExceededError):
+            checkout_service.add_to_cart(cart.id, item.id, 2, unit_cost_override=Decimal("4.00"))
 
 
 @pytest.mark.django_db
