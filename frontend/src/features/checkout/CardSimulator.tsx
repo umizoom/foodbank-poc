@@ -50,7 +50,7 @@ export function CardSimulator({ onNeighbourIdentified }: CardSimulatorProps) {
   return (
     <div className="max-w-md mx-auto mt-12">
       <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Simulate Card Tap</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Start Checkout</h2>
         <p className="text-sm text-gray-500 mb-6">Scan the neighbour's QR code or enter their card ID to begin checkout</p>
 
         {error && <AlertBanner type="error" message={error} onDismiss={() => setError(null)} />}
@@ -68,11 +68,7 @@ export function CardSimulator({ onNeighbourIdentified }: CardSimulatorProps) {
             )}
           </FormField>
           <div className="flex flex-col gap-2">
-            <Button type="submit" loading={loading} className="w-full" data-testid="simulate-card-button">
-              Simulate Card Tap
-            </Button>
             <Button
-              variant="secondary"
               type="button"
               className="w-full"
               disabled={loading}
@@ -80,6 +76,9 @@ export function CardSimulator({ onNeighbourIdentified }: CardSimulatorProps) {
               data-testid="scan-qr-button"
             >
               Scan QR
+            </Button>
+            <Button type="submit" variant="secondary" loading={loading} className="w-full" data-testid="manual-card-button">
+              Manual Card Entry
             </Button>
           </div>
         </form>

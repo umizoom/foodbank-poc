@@ -34,7 +34,7 @@ describe('CardSimulator', () => {
     renderWithProviders(<CardSimulator onNeighbourIdentified={onIdentified} />);
 
     await user.type(screen.getByTestId('card-id-input'), 'CARD-001');
-    await user.click(screen.getByTestId('simulate-card-button'));
+    await user.click(screen.getByTestId('manual-card-button'));
 
     await waitFor(() => expect(onIdentified).toHaveBeenCalled());
   });
@@ -44,7 +44,7 @@ describe('CardSimulator', () => {
     renderWithProviders(<CardSimulator onNeighbourIdentified={vi.fn()} />);
 
     await user.type(screen.getByTestId('card-id-input'), 'UNKNOWN-CARD');
-    await user.click(screen.getByTestId('simulate-card-button'));
+    await user.click(screen.getByTestId('manual-card-button'));
 
     await waitFor(() =>
       expect(screen.getByText('No neighbour found with this card ID')).toBeInTheDocument(),

@@ -9,7 +9,7 @@ describe('CheckoutPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Checkout')).toBeInTheDocument();
-      expect(screen.getByRole('heading', { name: 'Simulate Card Tap' })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Start Checkout' })).toBeInTheDocument();
     });
   });
 
@@ -30,7 +30,7 @@ describe('CheckoutPage', () => {
     });
 
     await user.type(screen.getByTestId('card-id-input'), 'UNKNOWN-CARD');
-    await user.click(screen.getByTestId('simulate-card-button'));
+    await user.click(screen.getByTestId('manual-card-button'));
 
     await waitFor(() => {
       expect(screen.getByText('No neighbour found with this card ID')).toBeInTheDocument();
@@ -46,7 +46,7 @@ describe('CheckoutPage', () => {
     });
 
     await user.type(screen.getByTestId('card-id-input'), 'CARD-001');
-    await user.click(screen.getByTestId('simulate-card-button'));
+    await user.click(screen.getByTestId('manual-card-button'));
 
     await waitFor(() => {
       expect(screen.getByTestId('neighbour-banner')).toBeInTheDocument();
