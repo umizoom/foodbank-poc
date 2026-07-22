@@ -8,6 +8,7 @@ import { PageHeader } from '@/shared/components/PageHeader';
 import { FormField } from '@/shared/components/FormField';
 import { Button } from '@/shared/components/Button';
 import { AlertBanner } from '@/shared/components/AlertBanner';
+import { QrScanner } from '@/shared/components/QrScanner';
 import type { Neighbour } from '@/shared/api/types';
 import { COMMON_ALLERGIES } from '@/shared/api/types';
 
@@ -31,12 +32,14 @@ export function NeighbourFormPage() {
   const [generalError, setGeneralError] = useState<string | null>(null);
 
   const [customAllergy, setCustomAllergy] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
     setError,
+    setValue,
     control,
     formState: { errors },
   } = useForm<NeighbourFormData>({
@@ -106,14 +109,36 @@ export function NeighbourFormPage() {
 
         <FormField label="Card ID" required error={errors.card_id?.message}>
           {(props) => (
-            <input
-              {...register('card_id', { required: 'Card ID is required', maxLength: { value: 100, message: 'Card ID must be under 100 characters' } })}
-              className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              data-testid="neighbour-card-input"
-              {...props}
-            />
+            <div className="flex gap-2">
+              <input
+                {...register('card_id', { required: 'Card ID is required', maxLength: { value: 100, message: 'Card ID must be under 100 characters' } })}
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                placeholder="Enter or scan a card ID..."
+                data-testid="neighbour-card-input"
+                {...props}
+              />
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => setScannerOpen(true)}
+                data-testid="neighbour-scan-qr-button"
+              >
+                Scan QR
+              </Button>
+            </div>
           )}
         </FormField>
+
+        {scannerOpen && (
+          <QrScanner
+            onScan={(value) => {
+              setValue('card_id', value, { shouldValidate: true });
+              setScannerOpen(false);
+              addToast('success', 'QR code scanned');
+            }}
+            onClose={() => setScannerOpen(false)}
+          />
+        )}
 
         <hr className="my-6 border-gray-200" />
         <h3 className="text-md font-semibold text-gray-900 mb-4">Neighbour Information</h3>
